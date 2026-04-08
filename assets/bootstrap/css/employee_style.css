@@ -1,0 +1,71 @@
+body {
+    background: #f4f7fb;
+    font-family: Arial, sans-serif;
+}
+
+.auth-page {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    min-height: 100vh;
+}
+
+.auth-card {
+    max-width: 700px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    padding: 30px;
+    box-shadow: 0 12px 30px rgba(0,0,0,.15);
+}
+
+.main-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    background: #1e3a8a;
+    color: #fff;
+    padding: 24px 16px;
+}
+
+.sidebar-brand {
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(255,255,255,.15);
+    padding-bottom: 14px;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu li {
+    margin-bottom: 10px;
+}
+
+.sidebar-menu li a {
+    display: block;
+    padding: 12px 14px;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: .2s ease;
+}
+
+.sidebar-menu li a:hover {
+    background: rgba(255,255,255,.15);
+}
+
+.content-area {
+    flex: 1;
+    padding: 24px;
+}
+
+.stat-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 22px rgba(0,0,0,.06);
+}
