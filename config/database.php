@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$db   = 'hr';
+$db   = 'db_hr';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';

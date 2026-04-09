@@ -17,27 +17,32 @@ function old($key, $default = '') {
     return $_POST[$key] ?? $default;
 }
 
-function get_client_ip() {
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) return $_SERVER['HTTP_CLIENT_IP'];
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
-    return $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
-}
-
 function generate_csrf_token() {
-    if (empty($_SESSION['csrf_token'])) {
+    if (empty($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
     return $_SESSION['csrf_token'];
 }
 
 function verify_csrf_token($token) {
-    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+    return isset($_SESSION['csrf_token'])
+        && is_string($_SESSION['csrf_token'])
+        && is_string($token)
+        && hash_equals($_SESSION['csrf_token'], $token);
 }
 
 function require_csrf() {
     $token = $_POST['csrf_token'] ?? '';
+
     if (!verify_csrf_token($token)) {
-        exit('Invalid CSRF token.');
+        echo '<pre>';
+        echo 'CSRF FAILED' . PHP_EOL;
+        echo 'REQUEST URI: ' . ($_SERVER['REQUEST_URI'] ?? 'unknown') . PHP_EOL;
+        echo 'SESSION TOKEN: ';
+        var_dump($_SESSION['csrf_token'] ?? null);
+        echo 'POST TOKEN: ';
+        var_dump($_POST['csrf_token'] ?? null);
+        exit;
     }
 }
 
@@ -97,4 +102,16 @@ function is_locked_out(PDO $pdo, $userType, $employeeNo = null, $username = null
     $row = $stmt->fetch();
 
     return ($row && (int)$row['failed_count'] >= LOGIN_MAX_ATTEMPTS);
+}
+
+function get_client_ip() {
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        return $_SERVER['HTTP_CLIENT_IP'];
+    }
+
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
+    }
+
+    return $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
 }

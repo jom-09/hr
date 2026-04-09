@@ -6,6 +6,7 @@ require_once __DIR__ . '/../includes/functions.php';
 
 $errors = [];
 $success = '';
+$csrf = generate_csrf_token();
 
 if (is_post()) {
     require_csrf();
@@ -64,8 +65,6 @@ if (is_post()) {
         }
     }
 }
-
-$csrf = generate_csrf_token();
 ?>
 <!DOCTYPE html>
 <html lang="en">
