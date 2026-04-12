@@ -11,4 +11,4 @@
 <body>
 <div class="main-layout">
     <?php include __DIR__ . '/sidebar_admin.php'; ?>
-    <div class="content-area"></div>
+    <div class="content-area">
