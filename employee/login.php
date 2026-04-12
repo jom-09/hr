@@ -63,41 +63,106 @@ $csrf = generate_csrf_token();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Login</title>
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../assets/css/employee_style.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/employee_style.css">
 </head>
-<body class="auth-page">
-<div class="container py-5">
-    <div class="auth-card">
-        <h2 class="mb-4">Employee Login</h2>
+<body class="employee-auth-page">
 
-        <?php if ($errors): ?>
-            <div class="alert alert-danger">
-                <?php foreach ($errors as $error): ?>
-                    <div><?= e($error) ?></div>
-                <?php endforeach; ?>
+<div class="employee-auth-wrapper">
+    <div class="employee-auth-shell">
+
+        <div class="employee-auth-left">
+            <div class="auth-brand-badge">Employee Portal</div>
+            <h1>Welcome Back</h1>
+            <p>
+                Access your employee account, manage your credentials,
+                and keep your records updated through the portal.
+            </p>
+
+            <div class="auth-feature-list">
+                <div class="auth-feature-item">
+                    <span class="auth-feature-icon">📄</span>
+                    <div>
+                        <strong>Credential Management</strong>
+                        <p>Upload and view your official files anytime.</p>
+                    </div>
+                </div>
+
+                <div class="auth-feature-item">
+                    <span class="auth-feature-icon">🔒</span>
+                    <div>
+                        <strong>Secure Login</strong>
+                        <p>Your account access is protected and monitored.</p>
+                    </div>
+                </div>
+
+                <div class="auth-feature-item">
+                    <span class="auth-feature-icon">⚡</span>
+                    <div>
+                        <strong>Fast Access</strong>
+                        <p>Quickly open your dashboard and employee tools.</p>
+                    </div>
+                </div>
             </div>
-        <?php endif; ?>
+        </div>
 
-        <form method="POST" autocomplete="off">
-            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+        <div class="employee-auth-right">
+            <div class="employee-auth-card">
+                <div class="auth-card-header">
+                    <p class="auth-kicker">Sign in</p>
+                    <h2>Employee Login</h2>
+                    <span>Enter your employee credentials to continue.</span>
+                </div>
 
-            <div class="mb-3">
-                <label class="form-label">Employee No.</label>
-                <input type="text" name="employee_no" class="form-control" value="<?= e(old('employee_no')) ?>" required>
+                <?php if ($errors): ?>
+                    <div class="custom-alert custom-alert-danger mb-4">
+                        <div class="custom-alert-title">Login Error</div>
+                        <?php foreach ($errors as $error): ?>
+                            <div class="custom-alert-text"><?= e($error) ?></div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="POST" autocomplete="off" class="auth-form">
+                    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+
+                    <div class="form-group-custom mb-3">
+                        <label class="form-label-custom">Employee No.</label>
+                        <input
+                            type="text"
+                            name="employee_no"
+                            class="form-control-custom"
+                            value="<?= e(old('employee_no')) ?>"
+                            placeholder="Enter employee number"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group-custom mb-4">
+                        <label class="form-label-custom">Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            class="form-control-custom"
+                            placeholder="Enter password"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="btn-auth-submit">Login</button>
+                    <div class="auth-back-bottom">
+                        <a href="../index.php">← Back to Home</a>
+                    </div>
+
+                    <div class="auth-footer-link">
+                        <span>Don't have an account?</span>
+                        <a href="register.php">Register account</a>
+                    </div>
+                </form>
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100">Login</button>
-
-            <div class="text-center mt-3">
-                <a href="register.php">Register account</a>
-            </div>
-        </form>
     </div>
 </div>
+
 </body>
 </html>

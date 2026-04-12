@@ -73,82 +73,214 @@ if (is_post()) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Registration</title>
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../assets/css/employee_style.css">
+    <link rel="stylesheet" href="../assets/bootstrap/css/employee_style.css">
 </head>
-<body class="auth-page">
-<div class="container py-5">
-    <div class="auth-card">
-        <h2 class="mb-4">Employee Registration</h2>
+<body class="employee-auth-page">
 
-        <?php if ($errors): ?>
-            <div class="alert alert-danger">
-                <?php foreach ($errors as $error): ?>
-                    <div><?= e($error) ?></div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+<div class="employee-auth-wrapper">
+    <div class="employee-auth-shell employee-register-shell">
 
-        <?php if ($success): ?>
-            <div class="alert alert-success"><?= e($success) ?></div>
-        <?php endif; ?>
+        <div class="employee-auth-left">
+            <div class="auth-brand-badge">Employee Portal</div>
+            <h1>Create Your Account</h1>
+            <p>
+                Register your employee account to access the portal, upload credentials,
+                and manage your employee records online.
+            </p>
 
-        <form method="POST" autocomplete="off">
-            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Employee No.</label>
-                    <input type="text" name="employee_no" class="form-control" value="<?= e(old('employee_no')) ?>" required>
+            <div class="auth-feature-list">
+                <div class="auth-feature-item">
+                    <span class="auth-feature-icon">📝</span>
+                    <div>
+                        <strong>Quick Registration</strong>
+                        <p>Submit your employee details to request account access.</p>
+                    </div>
                 </div>
 
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Email (optional)</label>
-                    <input type="email" name="email" class="form-control" value="<?= e(old('email')) ?>">
+                <div class="auth-feature-item">
+                    <span class="auth-feature-icon">👨‍💼</span>
+                    <div>
+                        <strong>HR Approval</strong>
+                        <p>Your registration will be reviewed before activation.</p>
+                    </div>
                 </div>
 
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">First Name</label>
-                    <input type="text" name="firstname" class="form-control" value="<?= e(old('firstname')) ?>" required>
-                </div>
-
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Middle Name</label>
-                    <input type="text" name="middlename" class="form-control" value="<?= e(old('middlename')) ?>">
-                </div>
-
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Last Name</label>
-                    <input type="text" name="lastname" class="form-control" value="<?= e(old('lastname')) ?>" required>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Department</label>
-                    <input type="text" name="department" class="form-control" value="<?= e(old('department')) ?>" required>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Position Title</label>
-                    <input type="text" name="position_title" class="form-control" value="<?= e(old('position_title')) ?>" required>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" required>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Confirm Password</label>
-                    <input type="password" name="confirm_password" class="form-control" required>
+                <div class="auth-feature-item">
+                    <span class="auth-feature-icon">📁</span>
+                    <div>
+                        <strong>Credential Access</strong>
+                        <p>Once approved, you can upload and manage documents.</p>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <button type="submit" class="btn btn-primary w-100">Register</button>
+        <div class="employee-auth-right employee-register-right">
+            
 
-            <div class="text-center mt-3">
-                <a href="login.php">Already have an account? Login</a>
+            <div class="employee-auth-card employee-register-card">
+                <div class="auth-card-header">
+                    <p class="auth-kicker">Create account</p>
+                    <h2>Employee Registration</h2>
+                    <span>Fill in your details to submit a registration request.</span>
+                </div>
+
+                <?php if ($errors): ?>
+                    <div class="custom-alert custom-alert-danger mb-4">
+                        <div class="custom-alert-title">Registration Error</div>
+                        <?php foreach ($errors as $error): ?>
+                            <div class="custom-alert-text"><?= e($error) ?></div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($success): ?>
+                    <div class="custom-alert custom-alert-success mb-4">
+                        <div class="custom-alert-title">Success</div>
+                        <div class="custom-alert-text"><?= e($success) ?></div>
+                    </div>
+                <?php endif; ?>
+
+                <form method="POST" autocomplete="off" class="auth-form">
+                    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Employee No.</label>
+                                <input
+                                    type="text"
+                                    name="employee_no"
+                                    class="form-control-custom"
+                                    value="<?= e(old('employee_no')) ?>"
+                                    placeholder="Enter employee number"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Email (Optional)</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    class="form-control-custom"
+                                    value="<?= e(old('email')) ?>"
+                                    placeholder="Enter email address"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">First Name</label>
+                                <input
+                                    type="text"
+                                    name="firstname"
+                                    class="form-control-custom"
+                                    value="<?= e(old('firstname')) ?>"
+                                    placeholder="First name"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Middle Name</label>
+                                <input
+                                    type="text"
+                                    name="middlename"
+                                    class="form-control-custom"
+                                    value="<?= e(old('middlename')) ?>"
+                                    placeholder="Middle name"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Last Name</label>
+                                <input
+                                    type="text"
+                                    name="lastname"
+                                    class="form-control-custom"
+                                    value="<?= e(old('lastname')) ?>"
+                                    placeholder="Last name"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Department</label>
+                                <input
+                                    type="text"
+                                    name="department"
+                                    class="form-control-custom"
+                                    value="<?= e(old('department')) ?>"
+                                    placeholder="Enter department"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Position Title</label>
+                                <input
+                                    type="text"
+                                    name="position_title"
+                                    class="form-control-custom"
+                                    value="<?= e(old('position_title')) ?>"
+                                    placeholder="Enter position title"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Password</label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    class="form-control-custom"
+                                    placeholder="Enter password"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Confirm Password</label>
+                                <input
+                                    type="password"
+                                    name="confirm_password"
+                                    class="form-control-custom"
+                                    placeholder="Confirm password"
+                                    required
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-auth-submit mt-4">Submit Registration</button>
+
+                    <div class="auth-footer-link">
+                        <span>Already have an account?</span>
+                        <a href="login.php">Login</a>
+                    </div>
+                    <a href="../index.php" class="auth-back-btn">← Back to Home</a>
+                </form>
             </div>
-        </form>
+        </div>
+
     </div>
 </div>
+
 </body>
 </html>

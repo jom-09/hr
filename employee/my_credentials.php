@@ -3,36 +3,154 @@ require_once __DIR__ . '/../includes/auth_employee.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 
+$errors = [];
+$success = '';
+
+/* =========================
+   DELETE LOGIC
+========================= */
+if (is_post() && isset($_POST['delete_id'])) {
+    require_csrf();
+
+    $id = (int)$_POST['delete_id'];
+
+    // kunin muna file
+    $stmt = $pdo->prepare("SELECT * FROM credentials WHERE id=? AND employee_id=?");
+    $stmt->execute([$id, $_SESSION['employee_id']]);
+    $file = $stmt->fetch();
+
+    if ($file) {
+        // delete physical file
+        if (file_exists($file['file_path'])) {
+            unlink($file['file_path']);
+        }
+
+        // delete sa DB
+        $stmt = $pdo->prepare("DELETE FROM credentials WHERE id=?");
+        $stmt->execute([$id]);
+
+        $success = "Credential deleted successfully.";
+    } else {
+        $errors[] = "File not found or unauthorized.";
+    }
+}
+
+/* =========================
+   FETCH DATA
+========================= */
 $stmt = $pdo->prepare("SELECT * FROM credentials WHERE employee_id=? ORDER BY uploaded_at DESC");
 $stmt->execute([$_SESSION['employee_id']]);
 $data = $stmt->fetchAll();
 
+$csrf = generate_csrf_token();
+
 include __DIR__ . '/../includes/header_employee.php';
 ?>
 
-<h3 class="mb-4">My Credentials</h3>
+<div class="credentials-page">
+    <div class="page-topbar">
+        <div>
+            <p class="page-kicker">Employee Portal</p>
+            <h1 class="page-title">My Credentials</h1>
+            <p class="page-subtitle">
+                View, manage, and access all your uploaded credentials in one place.
+            </p>
+        </div>
+    </div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Type</th>
-            <th>File</th>
-            <th>Date</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($data as $row): ?>
-        <tr>
-            <td><?= e($row['credential_type']) ?></td>
-            <td><?= e($row['original_name']) ?></td>
-            <td><?= e($row['uploaded_at']) ?></td>
-            <td>
-                <a href="<?= e($row['file_path']) ?>" target="_blank" class="btn btn-sm btn-primary">View</a>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+    <?php if ($errors): ?>
+        <div class="custom-alert custom-alert-danger mb-4">
+            <?php foreach ($errors as $e): ?>
+                <div class="custom-alert-text"><?= e($e) ?></div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($success): ?>
+        <div class="custom-alert custom-alert-success mb-4">
+            <?= e($success) ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="dashboard-panel">
+        <div class="panel-header">
+            <div>
+                <h4>Uploaded Credentials</h4>
+                <p>List of all your submitted files</p>
+            </div>
+        </div>
+
+        <div class="panel-body">
+
+            <?php if (!$data): ?>
+                <div class="empty-state">
+                    <div class="empty-icon">📂</div>
+                    <h5>No Credentials Yet</h5>
+                    <p>You haven't uploaded any credentials yet.</p>
+                    <a href="upload.php" class="btn-empty-action">Upload Now</a>
+                </div>
+            <?php else: ?>
+
+            <div class="table-responsive-custom">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>File Name</th>
+                            <th>Date Uploaded</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($data as $row): ?>
+                        <tr>
+                            <td>
+                                <span class="badge-type">
+                                    <?= e($row['credential_type']) ?>
+                                </span>
+                            </td>
+
+                            <td class="file-name">
+                                <?= e($row['original_name']) ?>
+                            </td>
+
+                            <td class="date-text">
+                                <?= date('M d, Y', strtotime($row['uploaded_at'])) ?>
+                            </td>
+
+                            <td class="text-end action-buttons">
+
+                                <!-- VIEW -->
+                                <a href="<?= e($row['file_path']) ?>" target="_blank" class="btn-view">
+                                    View
+                                </a>
+
+                                <!-- DELETE -->
+                                <form method="POST" class="delete-form" onsubmit="return confirmDelete();">
+                                    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+                                    <input type="hidden" name="delete_id" value="<?= $row['id'] ?>">
+                                    <button type="submit" class="btn-delete">
+                                        Delete
+                                    </button>
+                                </form>
+
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <?php endif; ?>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete() {
+    return confirm("Are you sure you want to delete this file?");
+}
+</script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

@@ -1,13 +1,38 @@
 <div class="sidebar">
-    <div class="sidebar-brand">
-        <h4>Employee Panel</h4>
-        <small><?= e($_SESSION['employee_name'] ?? '') ?></small>
+    <div class="sidebar-top">
+        <div class="sidebar-brand">
+            <div class="brand-logo">EP</div>
+            <div class="brand-text">
+                <h4>Employee Panel</h4>
+                <small><?= e($_SESSION['employee_name'] ?? '') ?></small>
+            </div>
+        </div>
     </div>
 
     <ul class="sidebar-menu">
-        <li><a href="dashboard.php">Dashboard</a></li>
-        <li><a href="upload.php">Upload Credentials</a></li>
-        <li><a href="my_credentials.php">My Credentials</a></li>
-        <li><a href="logout.php">Logout</a></li>
+        <li>
+            <a href="dashboard.php" class="<?= basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : '' ?>">
+                <span class="menu-icon">🏠</span>
+                <span class="menu-text">Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="upload.php" class="<?= basename($_SERVER['PHP_SELF']) == 'upload.php' ? 'active' : '' ?>">
+                <span class="menu-icon">⬆️</span>
+                <span class="menu-text">Upload Credentials</span>
+            </a>
+        </li>
+        <li>
+            <a href="my_credentials.php" class="<?= basename($_SERVER['PHP_SELF']) == 'my_credentials.php' ? 'active' : '' ?>">
+                <span class="menu-icon">📂</span>
+                <span class="menu-text">My Credentials</span>
+            </a>
+        </li>
+        <li>
+            <a href="logout.php">
+                <span class="menu-icon">🚪</span>
+                <span class="menu-text">Logout</span>
+            </a>
+        </li>
     </ul>
-</div>
+</div>  
