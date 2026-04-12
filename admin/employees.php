@@ -3,6 +3,162 @@ require_once __DIR__ . '/../includes/auth_admin.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 
+$success = '';
+$error   = '';
+
+/*
+|--------------------------------------------------------------------------
+| Detect password column
+|--------------------------------------------------------------------------
+*/
+$passwordColumn = null;
+try {
+    $check = $pdo->query("SHOW COLUMNS FROM employees");
+    $columns = $check->fetchAll(PDO::FETCH_COLUMN, 0);
+
+    if (in_array('password_hash', $columns, true)) {
+        $passwordColumn = 'password_hash';
+    } elseif (in_array('password', $columns, true)) {
+        $passwordColumn = 'password';
+    }
+} catch (Throwable $e) {
+    // ignore column detection failure
+}
+
+/*
+|--------------------------------------------------------------------------
+| Handle POST actions
+|--------------------------------------------------------------------------
+*/
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+
+    try {
+        /*
+        |--------------------------------------------------------------------------
+        | EDIT EMPLOYEE
+        |--------------------------------------------------------------------------
+        */
+        if ($action === 'edit_employee') {
+            $id             = (int)($_POST['id'] ?? 0);
+            $employee_no    = trim($_POST['employee_no'] ?? '');
+            $firstname      = trim($_POST['firstname'] ?? '');
+            $middlename     = trim($_POST['middlename'] ?? '');
+            $lastname       = trim($_POST['lastname'] ?? '');
+            $department     = trim($_POST['department'] ?? '');
+            $position_title = trim($_POST['position_title'] ?? '');
+            $status         = trim($_POST['status'] ?? 'PENDING');
+            $is_active      = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 0;
+            $new_password   = trim($_POST['new_password'] ?? '');
+
+            if ($id <= 0) {
+                throw new Exception('Invalid employee ID.');
+            }
+
+            if ($employee_no === '' || $firstname === '' || $lastname === '' || $department === '' || $position_title === '') {
+                throw new Exception('Please fill in all required fields.');
+            }
+
+            if (!in_array($status, ['PENDING', 'APPROVED', 'REJECTED'], true)) {
+                $status = 'PENDING';
+            }
+
+            if (!in_array($is_active, [0, 1], true)) {
+                $is_active = 0;
+            }
+
+            // Check duplicate employee number
+            $dupStmt = $pdo->prepare("SELECT COUNT(*) FROM employees WHERE employee_no = ? AND id != ?");
+            $dupStmt->execute([$employee_no, $id]);
+            if ((int)$dupStmt->fetchColumn() > 0) {
+                throw new Exception('Employee number already exists.');
+            }
+
+            if ($new_password !== '' && $passwordColumn !== null) {
+                $hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
+
+                $sql = "UPDATE employees SET 
+                            employee_no = ?,
+                            firstname = ?,
+                            middlename = ?,
+                            lastname = ?,
+                            department = ?,
+                            position_title = ?,
+                            status = ?,
+                            is_active = ?,
+                            {$passwordColumn} = ?
+                        WHERE id = ?";
+
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    $employee_no,
+                    $firstname,
+                    $middlename,
+                    $lastname,
+                    $department,
+                    $position_title,
+                    $status,
+                    $is_active,
+                    $hashedPassword,
+                    $id
+                ]);
+            } else {
+                $sql = "UPDATE employees SET 
+                            employee_no = ?,
+                            firstname = ?,
+                            middlename = ?,
+                            lastname = ?,
+                            department = ?,
+                            position_title = ?,
+                            status = ?,
+                            is_active = ?
+                        WHERE id = ?";
+
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    $employee_no,
+                    $firstname,
+                    $middlename,
+                    $lastname,
+                    $department,
+                    $position_title,
+                    $status,
+                    $is_active,
+                    $id
+                ]);
+            }
+
+            $success = 'Employee updated successfully.';
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | DELETE EMPLOYEE
+        |--------------------------------------------------------------------------
+        */
+        if ($action === 'delete_employee') {
+            $id = (int)($_POST['id'] ?? 0);
+
+            if ($id <= 0) {
+                throw new Exception('Invalid employee ID.');
+            }
+
+            $stmt = $pdo->prepare("DELETE FROM employees WHERE id = ?");
+            $stmt->execute([$id]);
+
+            $success = 'Employee deleted successfully.';
+        }
+
+    } catch (Throwable $e) {
+        $error = $e->getMessage();
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Search
+|--------------------------------------------------------------------------
+*/
 $search = trim($_GET['search'] ?? '');
 
 if ($search !== '') {
@@ -32,12 +188,13 @@ include __DIR__ . '/../includes/header_admin.php';
 
 <div class="content-inner">
     <div class="admin-page">
+
         <div class="page-hero page-hero--compact">
             <div class="page-hero__content">
                 <div class="hero-badge">Admin Directory</div>
                 <h1 class="page-title">Registered Employees</h1>
                 <p class="page-subtitle">
-                    View, search, and monitor all registered employees in the system.
+                    View, search, edit, and manage all registered employees in the system.
                 </p>
             </div>
 
@@ -49,6 +206,14 @@ include __DIR__ . '/../includes/header_admin.php';
                 </div>
             </div>
         </div>
+
+        <?php if ($success): ?>
+            <div class="alert alert-success mt-4"><?= e($success) ?></div>
+        <?php endif; ?>
+
+        <?php if ($error): ?>
+            <div class="alert alert-danger mt-4"><?= e($error) ?></div>
+        <?php endif; ?>
 
         <div class="dashboard-card mt-4">
             <div class="card-header-custom">
@@ -102,6 +267,7 @@ include __DIR__ . '/../includes/header_admin.php';
                             <th>Status</th>
                             <th>Active</th>
                             <th>Created At</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -109,16 +275,16 @@ include __DIR__ . '/../includes/header_admin.php';
                             <?php foreach ($employees as $emp): ?>
                                 <?php
                                     $statusClass = 'status-badge--dark';
-                                    if ($emp['status'] === 'APPROVED') $statusClass = 'status-badge--green';
-                                    if ($emp['status'] === 'PENDING') $statusClass = 'status-badge--yellow';
-                                    if ($emp['status'] === 'REJECTED') $statusClass = 'status-badge--danger';
+                                    if (($emp['status'] ?? '') === 'APPROVED') $statusClass = 'status-badge--green';
+                                    if (($emp['status'] ?? '') === 'PENDING')  $statusClass = 'status-badge--yellow';
+                                    if (($emp['status'] ?? '') === 'REJECTED') $statusClass = 'status-badge--danger';
 
-                                    $activeClass = ((int)$emp['is_active'] === 1) ? 'status-badge--green' : 'status-badge--dark';
-                                    $activeText  = ((int)$emp['is_active'] === 1) ? 'Yes' : 'No';
+                                    $activeClass = ((int)($emp['is_active'] ?? 0) === 1) ? 'status-badge--green' : 'status-badge--dark';
+                                    $activeText  = ((int)($emp['is_active'] ?? 0) === 1) ? 'Yes' : 'No';
                                 ?>
                                 <tr>
                                     <td>
-                                        <div class="table-title"><?= e($emp['employee_no']) ?></div>
+                                        <div class="table-title"><?= e($emp['employee_no'] ?? '') ?></div>
                                         <div class="table-text-muted">Employee ID</div>
                                     </td>
 
@@ -127,13 +293,13 @@ include __DIR__ . '/../includes/header_admin.php';
                                         <div class="table-text-muted">Registered employee</div>
                                     </td>
 
-                                    <td><?= e($emp['department']) ?></td>
+                                    <td><?= e($emp['department'] ?? '') ?></td>
 
-                                    <td><?= e($emp['position_title']) ?></td>
+                                    <td><?= e($emp['position_title'] ?? '') ?></td>
 
                                     <td>
                                         <span class="status-badge <?= $statusClass ?>">
-                                            <?= e($emp['status']) ?>
+                                            <?= e($emp['status'] ?? '') ?>
                                         </span>
                                     </td>
 
@@ -144,13 +310,43 @@ include __DIR__ . '/../includes/header_admin.php';
                                     </td>
 
                                     <td>
-                                        <div class="table-date"><?= e($emp['created_at']) ?></div>
+                                        <div class="table-date"><?= e($emp['created_at'] ?? '') ?></div>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-primary editEmployeeBtn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editEmployeeModal"
+                                                data-id="<?= e($emp['id']) ?>"
+                                                data-employee_no="<?= e($emp['employee_no'] ?? '') ?>"
+                                                data-firstname="<?= e($emp['firstname'] ?? '') ?>"
+                                                data-middlename="<?= e($emp['middlename'] ?? '') ?>"
+                                                data-lastname="<?= e($emp['lastname'] ?? '') ?>"
+                                                data-department="<?= e($emp['department'] ?? '') ?>"
+                                                data-position_title="<?= e($emp['position_title'] ?? '') ?>"
+                                                data-status="<?= e($emp['status'] ?? '') ?>"
+                                                data-is_active="<?= (int)($emp['is_active'] ?? 0) ?>"
+                                            >
+                                                Edit
+                                            </button>
+
+                                            <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this employee?');">
+                                                <input type="hidden" name="action" value="delete_employee">
+                                                <input type="hidden" name="id" value="<?= e($emp['id']) ?>">
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7">
+                                <td colspan="8">
                                     <div class="empty-state">
                                         <div class="empty-state__icon">👤</div>
                                         <div class="empty-state__title">No employees found</div>
@@ -167,5 +363,111 @@ include __DIR__ . '/../includes/header_admin.php';
         </div>
     </div>
 </div>
+
+<!-- Edit Employee Modal -->
+<div class="modal fade" id="editEmployeeModal" tabindex="-1" aria-labelledby="editEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="POST">
+                <input type="hidden" name="action" value="edit_employee">
+                <input type="hidden" name="id" id="edit_id">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editEmployeeModalLabel">Edit Employee</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Employee No.</label>
+                            <input type="text" name="employee_no" id="edit_employee_no" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Department</label>
+                            <input type="text" name="department" id="edit_department" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Firstname</label>
+                            <input type="text" name="firstname" id="edit_firstname" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Middlename</label>
+                            <input type="text" name="middlename" id="edit_middlename" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Lastname</label>
+                            <input type="text" name="lastname" id="edit_lastname" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Position Title</label>
+                            <input type="text" name="position_title" id="edit_position_title" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" id="edit_status" class="form-select" required>
+                                <option value="PENDING">PENDING</option>
+                                <option value="APPROVED">APPROVED</option>
+                                <option value="REJECTED">REJECTED</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Active</label>
+                            <select name="is_active" id="edit_is_active" class="form-select" required>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">New Password</label>
+                            <input
+                                type="password"
+                                name="new_password"
+                                id="edit_new_password"
+                                class="form-control"
+                                placeholder="Leave blank if you do not want to change the password"
+                            >
+                            <small class="text-muted">Only fill this in if you want to update the employee password.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const buttons = document.querySelectorAll('.editEmployeeBtn');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', function () {
+            document.getElementById('edit_id').value = this.getAttribute('data-id') || '';
+            document.getElementById('edit_employee_no').value = this.getAttribute('data-employee_no') || '';
+            document.getElementById('edit_firstname').value = this.getAttribute('data-firstname') || '';
+            document.getElementById('edit_middlename').value = this.getAttribute('data-middlename') || '';
+            document.getElementById('edit_lastname').value = this.getAttribute('data-lastname') || '';
+            document.getElementById('edit_department').value = this.getAttribute('data-department') || '';
+            document.getElementById('edit_position_title').value = this.getAttribute('data-position_title') || '';
+            document.getElementById('edit_status').value = this.getAttribute('data-status') || 'PENDING';
+            document.getElementById('edit_is_active').value = this.getAttribute('data-is_active') || '0';
+            document.getElementById('edit_new_password').value = '';
+        });
+    });
+});
+</script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
