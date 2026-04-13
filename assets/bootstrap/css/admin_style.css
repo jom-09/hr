@@ -914,7 +914,81 @@ body {
         max-width: 220px;
     }
 }
+.department-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
 
+.department-accordion-item {
+    border: 1px solid rgba(40, 57, 108, 0.10);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.04);
+}
+
+.department-accordion-header {
+    margin: 0;
+}
+
+.department-accordion-button {
+    width: 100%;
+    border: 0;
+    outline: none;
+    background: linear-gradient(135deg, #ffffff, #f7f9fc);
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-weight: 700;
+    color: #28396C;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.department-accordion-button:hover {
+    background: linear-gradient(135deg, #f8fbff, #eef4fb);
+}
+
+.department-accordion-title {
+    font-size: 1.03rem;
+    text-align: left;
+}
+
+.department-accordion-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: rgba(40, 57, 108, 0.08);
+    color: #28396C;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.department-accordion-body {
+    padding: 0;
+    border-top: 1px solid rgba(40, 57, 108, 0.08);
+    background: #fff;
+}
+
+.empty-state--compact {
+    margin: 24px;
+}
+
+@media (max-width: 767.98px) {
+    .department-accordion-button {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .department-accordion-count {
+        align-self: flex-start;
+    }
+}
 
 
 

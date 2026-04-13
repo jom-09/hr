@@ -52,7 +52,8 @@ include __DIR__ . '/../includes/header_admin.php';
                             <th>Employee No.</th>
                             <th>Name</th>
                             <th>Department</th>
-                            <th>Position</th>
+                            <th>Date of Appointment</th>
+                            <th>Employment Status</th>
                             <th>Status</th>
                             <th>Registered At</th>
                             <th class="text-center action-column">Action</th>
@@ -69,12 +70,27 @@ include __DIR__ . '/../includes/header_admin.php';
 
                                     <td>
                                         <div class="table-title"><?= e(full_name($emp)) ?></div>
-                                        <div class="table-text-muted">Pending employee</div>
+                                        <div class="table-text-muted">
+                                            <?= e($emp['sex'] ?? 'N/A') ?>
+                                        </div>
                                     </td>
 
-                                    <td><?= e($emp['department']) ?></td>
+                                    <td>
+                                        <div class="table-title"><?= e($emp['department'] ?? 'N/A') ?></div>
+                                        <div class="table-text-muted">Department</div>
+                                    </td>
 
-                                    <td><?= e($emp['position_title']) ?></td>
+                                    <td>
+                                        <div class="table-title">
+                                            <?= !empty($emp['date_of_appointment']) ? e(date('F d, Y', strtotime($emp['date_of_appointment']))) : 'N/A' ?>
+                                        </div>
+                                        <div class="table-text-muted">Appointment date</div>
+                                    </td>
+
+                                    <td>
+                                        <div class="table-title"><?= e($emp['employment_status'] ?? 'N/A') ?></div>
+                                        <div class="table-text-muted">Employment type</div>
+                                    </td>
 
                                     <td>
                                         <span class="status-badge status-badge--yellow">
@@ -83,7 +99,9 @@ include __DIR__ . '/../includes/header_admin.php';
                                     </td>
 
                                     <td>
-                                        <div class="table-date"><?= e($emp['created_at']) ?></div>
+                                        <div class="table-date">
+                                            <?= !empty($emp['created_at']) ? e(date('F d, Y h:i A', strtotime($emp['created_at']))) : 'N/A' ?>
+                                        </div>
                                     </td>
 
                                     <td>
@@ -105,7 +123,7 @@ include __DIR__ . '/../includes/header_admin.php';
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7">
+                                <td colspan="8">
                                     <div class="empty-state">
                                         <div class="empty-state__icon">📭</div>
                                         <div class="empty-state__title">No pending registrations found</div>

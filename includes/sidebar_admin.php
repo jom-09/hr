@@ -38,6 +38,13 @@
             </a>
         </li>
 
+        <li class="<?= basename($_SERVER['PHP_SELF']) === 'announcements.php' ? 'active' : '' ?>">
+            <a href="announcements.php">
+                <span class="menu-icon">📢</span>
+                <span>Announcements</span>
+            </a>
+        </li>
+
         <li class="logout-item">
             <a href="logout.php">
                 <span class="menu-icon">↪</span>

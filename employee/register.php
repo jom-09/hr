@@ -8,30 +8,91 @@ $errors = [];
 $success = '';
 $csrf = generate_csrf_token();
 
+$departments = [
+    'Accounting',
+    'Admin',
+    'Agriculture',
+    'Assessor',
+    'Motorpool',
+    'Engineering',
+    'DAO',
+    'Executive',
+    'MBO',
+    'MCR',
+    'MENRO',
+    'MPDC',
+    'MTO',
+    'NUT/POP',
+    'SB Sec',
+    'SB Staff',
+    'VET',
+    'Gen Pub Utilities',
+    'Market',
+    'PESO',
+    'DRRM',
+    'MHO',
+    'MSWDO',
+    'EEU Market',
+    'Slaughter House'
+];
+
+$sexOptions = ['Male', 'Female'];
+
+$employmentStatuses = [
+    'Permanent',
+    'Contractual',
+    'Co-Terminus',
+    'Casual',
+    'Job Order'
+];
+
 if (is_post()) {
     require_csrf();
 
-    $employee_no    = trim($_POST['employee_no'] ?? '');
-    $firstname      = trim($_POST['firstname'] ?? '');
-    $middlename     = trim($_POST['middlename'] ?? '');
-    $lastname       = trim($_POST['lastname'] ?? '');
-    $email          = trim($_POST['email'] ?? '');
-    $department     = trim($_POST['department'] ?? '');
-    $position_title = trim($_POST['position_title'] ?? '');
-    $password       = $_POST['password'] ?? '';
-    $confirm        = $_POST['confirm_password'] ?? '';
+    $employee_no         = trim($_POST['employee_no'] ?? '');
+    $firstname           = trim($_POST['firstname'] ?? '');
+    $middlename          = trim($_POST['middlename'] ?? '');
+    $lastname            = trim($_POST['lastname'] ?? '');
+    $email               = trim($_POST['email'] ?? '');
+    $date_of_appointment = trim($_POST['date_of_appointment'] ?? '');
+    $sex                 = trim($_POST['sex'] ?? '');
+    $department          = trim($_POST['department'] ?? '');
+    $employment_status   = trim($_POST['employment_status'] ?? '');
+    $password            = $_POST['password'] ?? '';
+    $confirm             = $_POST['confirm_password'] ?? '';
 
     if ($employee_no === '') $errors[] = 'Employee No. is required.';
     if ($firstname === '') $errors[] = 'First name is required.';
     if ($lastname === '') $errors[] = 'Last name is required.';
+    if ($date_of_appointment === '') $errors[] = 'Date of appointment is required.';
+    if ($sex === '') $errors[] = 'Sex is required.';
     if ($department === '') $errors[] = 'Department is required.';
-    if ($position_title === '') $errors[] = 'Position title is required.';
+    if ($employment_status === '') $errors[] = 'Status of employment is required.';
     if ($password === '') $errors[] = 'Password is required.';
     if (strlen($password) < 8) $errors[] = 'Password must be at least 8 characters.';
     if ($password !== $confirm) $errors[] = 'Passwords do not match.';
 
     if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Invalid email address.';
+    }
+
+    if ($sex !== '' && !in_array($sex, $sexOptions, true)) {
+        $errors[] = 'Invalid sex selected.';
+    }
+
+    if ($department !== '' && !in_array($department, $departments, true)) {
+        $errors[] = 'Invalid department selected.';
+    }
+
+    if ($employment_status !== '' && !in_array($employment_status, $employmentStatuses, true)) {
+        $errors[] = 'Invalid employment status selected.';
+    }
+
+    if ($date_of_appointment !== '') {
+        $d = DateTime::createFromFormat('Y-m-d', $date_of_appointment);
+        if (!$d || $d->format('Y-m-d') !== $date_of_appointment) {
+            $errors[] = 'Invalid date of appointment.';
+        }
     }
 
     if (!$errors) {
@@ -45,8 +106,19 @@ if (is_post()) {
 
             $stmt = $pdo->prepare("
                 INSERT INTO employees (
-                    employee_no, firstname, middlename, lastname, email, department, position_title, password, status, is_active
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', 1)
+                    employee_no,
+                    firstname,
+                    middlename,
+                    lastname,
+                    email,
+                    date_of_appointment,
+                    sex,
+                    department,
+                    employment_status,
+                    password,
+                    status,
+                    is_active
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', 1)
             ");
 
             $stmt->execute([
@@ -55,8 +127,10 @@ if (is_post()) {
                 $middlename ?: null,
                 $lastname,
                 $email ?: null,
+                $date_of_appointment,
+                $sex,
                 $department,
-                $position_title,
+                $employment_status,
                 $hashed
             ]);
 
@@ -116,8 +190,6 @@ if (is_post()) {
         </div>
 
         <div class="employee-auth-right employee-register-right">
-            
-
             <div class="employee-auth-card employee-register-card">
                 <div class="auth-card-header">
                     <p class="auth-kicker">Create account</p>
@@ -215,13 +287,12 @@ if (is_post()) {
 
                         <div class="col-md-6">
                             <div class="form-group-custom">
-                                <label class="form-label-custom">Department</label>
+                                <label class="form-label-custom">Date of Appointment</label>
                                 <input
-                                    type="text"
-                                    name="department"
+                                    type="date"
+                                    name="date_of_appointment"
                                     class="form-control-custom"
-                                    value="<?= e(old('department')) ?>"
-                                    placeholder="Enter department"
+                                    value="<?= e(old('date_of_appointment')) ?>"
                                     required
                                 >
                             </div>
@@ -229,15 +300,43 @@ if (is_post()) {
 
                         <div class="col-md-6">
                             <div class="form-group-custom">
-                                <label class="form-label-custom">Position Title</label>
-                                <input
-                                    type="text"
-                                    name="position_title"
-                                    class="form-control-custom"
-                                    value="<?= e(old('position_title')) ?>"
-                                    placeholder="Enter position title"
-                                    required
-                                >
+                                <label class="form-label-custom">Sex</label>
+                                <select name="sex" class="form-control-custom" required>
+                                    <option value="">Select sex</option>
+                                    <?php foreach ($sexOptions as $option): ?>
+                                        <option value="<?= e($option) ?>" <?= old('sex') === $option ? 'selected' : '' ?>>
+                                            <?= e($option) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Department</label>
+                                <select name="department" class="form-control-custom" required>
+                                    <option value="">Select department</option>
+                                    <?php foreach ($departments as $dept): ?>
+                                        <option value="<?= e($dept) ?>" <?= old('department') === $dept ? 'selected' : '' ?>>
+                                            <?= e($dept) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">Status of Employment</label>
+                                <select name="employment_status" class="form-control-custom" required>
+                                    <option value="">Select status</option>
+                                    <?php foreach ($employmentStatuses as $status): ?>
+                                        <option value="<?= e($status) ?>" <?= old('employment_status') === $status ? 'selected' : '' ?>>
+                                            <?= e($status) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                         </div>
 
@@ -274,6 +373,7 @@ if (is_post()) {
                         <span>Already have an account?</span>
                         <a href="login.php">Login</a>
                     </div>
+
                     <a href="../index.php" class="auth-back-btn">← Back to Home</a>
                 </form>
             </div>

@@ -6,6 +6,44 @@ require_once __DIR__ . '/../includes/functions.php';
 $success = '';
 $error   = '';
 
+$departments = [
+    'Accounting',
+    'Admin',
+    'Agriculture',
+    'Assessor',
+    'Motorpool',
+    'Engineering',
+    'DAO',
+    'Executive',
+    'MBO',
+    'MCR',
+    'MENRO',
+    'MPDC',
+    'MTO',
+    'NUT/POP',
+    'SB Sec',
+    'SB Staff',
+    'VET',
+    'Gen Pub Utilities',
+    'Market',
+    'PESO',
+    'DRRM',
+    'MHO',
+    'MSWDO',
+    'EEU Market',
+    'Slaughter House'
+];
+
+$sexOptions = ['Male', 'Female'];
+
+$employmentStatuses = [
+    'Permanent',
+    'Contractual',
+    'Co-Terminus',
+    'Casual',
+    'Job Order'
+];
+
 /*
 |--------------------------------------------------------------------------
 | Detect password column
@@ -40,23 +78,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         |--------------------------------------------------------------------------
         */
         if ($action === 'edit_employee') {
-            $id             = (int)($_POST['id'] ?? 0);
-            $employee_no    = trim($_POST['employee_no'] ?? '');
-            $firstname      = trim($_POST['firstname'] ?? '');
-            $middlename     = trim($_POST['middlename'] ?? '');
-            $lastname       = trim($_POST['lastname'] ?? '');
-            $department     = trim($_POST['department'] ?? '');
-            $position_title = trim($_POST['position_title'] ?? '');
-            $status         = trim($_POST['status'] ?? 'PENDING');
-            $is_active      = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 0;
-            $new_password   = trim($_POST['new_password'] ?? '');
+            $id                  = (int)($_POST['id'] ?? 0);
+            $employee_no         = trim($_POST['employee_no'] ?? '');
+            $firstname           = trim($_POST['firstname'] ?? '');
+            $middlename          = trim($_POST['middlename'] ?? '');
+            $lastname            = trim($_POST['lastname'] ?? '');
+            $date_of_appointment = trim($_POST['date_of_appointment'] ?? '');
+            $sex                 = trim($_POST['sex'] ?? '');
+            $department          = trim($_POST['department'] ?? '');
+            $employment_status   = trim($_POST['employment_status'] ?? '');
+            $status              = trim($_POST['status'] ?? 'PENDING');
+            $is_active           = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 0;
+            $new_password        = trim($_POST['new_password'] ?? '');
 
             if ($id <= 0) {
                 throw new Exception('Invalid employee ID.');
             }
 
-            if ($employee_no === '' || $firstname === '' || $lastname === '' || $department === '' || $position_title === '') {
+            if (
+                $employee_no === '' ||
+                $firstname === '' ||
+                $lastname === '' ||
+                $date_of_appointment === '' ||
+                $sex === '' ||
+                $department === '' ||
+                $employment_status === ''
+            ) {
                 throw new Exception('Please fill in all required fields.');
+            }
+
+            if (!in_array($sex, $sexOptions, true)) {
+                throw new Exception('Invalid sex selected.');
+            }
+
+            if (!in_array($department, $departments, true)) {
+                throw new Exception('Invalid department selected.');
+            }
+
+            if (!in_array($employment_status, $employmentStatuses, true)) {
+                throw new Exception('Invalid employment status selected.');
             }
 
             if (!in_array($status, ['PENDING', 'APPROVED', 'REJECTED'], true)) {
@@ -65,6 +125,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (!in_array($is_active, [0, 1], true)) {
                 $is_active = 0;
+            }
+
+            $d = DateTime::createFromFormat('Y-m-d', $date_of_appointment);
+            if (!$d || $d->format('Y-m-d') !== $date_of_appointment) {
+                throw new Exception('Invalid date of appointment.');
             }
 
             // Check duplicate employee number
@@ -82,8 +147,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             firstname = ?,
                             middlename = ?,
                             lastname = ?,
+                            date_of_appointment = ?,
+                            sex = ?,
                             department = ?,
-                            position_title = ?,
+                            employment_status = ?,
                             status = ?,
                             is_active = ?,
                             {$passwordColumn} = ?
@@ -93,10 +160,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([
                     $employee_no,
                     $firstname,
-                    $middlename,
+                    $middlename ?: null,
                     $lastname,
+                    $date_of_appointment,
+                    $sex,
                     $department,
-                    $position_title,
+                    $employment_status,
                     $status,
                     $is_active,
                     $hashedPassword,
@@ -108,8 +177,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             firstname = ?,
                             middlename = ?,
                             lastname = ?,
+                            date_of_appointment = ?,
+                            sex = ?,
                             department = ?,
-                            position_title = ?,
+                            employment_status = ?,
                             status = ?,
                             is_active = ?
                         WHERE id = ?";
@@ -118,10 +189,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([
                     $employee_no,
                     $firstname,
-                    $middlename,
+                    $middlename ?: null,
                     $lastname,
+                    $date_of_appointment,
+                    $sex,
                     $department,
-                    $position_title,
+                    $employment_status,
                     $status,
                     $is_active,
                     $id
@@ -169,11 +242,13 @@ if ($search !== '') {
            OR middlename LIKE ?
            OR lastname LIKE ?
            OR department LIKE ?
-           OR position_title LIKE ?
+           OR sex LIKE ?
+           OR employment_status LIKE ?
+           OR date_of_appointment LIKE ?
         ORDER BY created_at DESC
     ");
     $term = "%{$search}%";
-    $stmt->execute([$term, $term, $term, $term, $term, $term]);
+    $stmt->execute([$term, $term, $term, $term, $term, $term, $term, $term]);
 } else {
     $stmt = $pdo->query("SELECT * FROM employees ORDER BY created_at DESC");
 }
@@ -219,7 +294,7 @@ include __DIR__ . '/../includes/header_admin.php';
             <div class="card-header-custom">
                 <div>
                     <h4 class="card-title-custom">Employee Search</h4>
-                    <p class="card-subtitle-custom">Search across employee number, name, department, and position</p>
+                    <p class="card-subtitle-custom">Search across employee number, name, department, sex, employment status, and appointment date</p>
                 </div>
             </div>
 
@@ -263,7 +338,8 @@ include __DIR__ . '/../includes/header_admin.php';
                             <th>Employee No.</th>
                             <th>Name</th>
                             <th>Department</th>
-                            <th>Position</th>
+                            <th>Date of Appointment</th>
+                            <th>Employment Status</th>
                             <th>Status</th>
                             <th>Active</th>
                             <th>Created At</th>
@@ -290,12 +366,25 @@ include __DIR__ . '/../includes/header_admin.php';
 
                                     <td>
                                         <div class="table-title"><?= e(full_name($emp)) ?></div>
-                                        <div class="table-text-muted">Registered employee</div>
+                                        <div class="table-text-muted"><?= e($emp['sex'] ?? 'N/A') ?></div>
                                     </td>
 
-                                    <td><?= e($emp['department'] ?? '') ?></td>
+                                    <td>
+                                        <div class="table-title"><?= e($emp['department'] ?? '') ?></div>
+                                        <div class="table-text-muted">Department</div>
+                                    </td>
 
-                                    <td><?= e($emp['position_title'] ?? '') ?></td>
+                                    <td>
+                                        <div class="table-title">
+                                            <?= !empty($emp['date_of_appointment']) ? e(date('F d, Y', strtotime($emp['date_of_appointment']))) : 'N/A' ?>
+                                        </div>
+                                        <div class="table-text-muted">Appointment date</div>
+                                    </td>
+
+                                    <td>
+                                        <div class="table-title"><?= e($emp['employment_status'] ?? 'N/A') ?></div>
+                                        <div class="table-text-muted">Employment type</div>
+                                    </td>
 
                                     <td>
                                         <span class="status-badge <?= $statusClass ?>">
@@ -310,7 +399,9 @@ include __DIR__ . '/../includes/header_admin.php';
                                     </td>
 
                                     <td>
-                                        <div class="table-date"><?= e($emp['created_at'] ?? '') ?></div>
+                                        <div class="table-date">
+                                            <?= !empty($emp['created_at']) ? e(date('F d, Y h:i A', strtotime($emp['created_at']))) : 'N/A' ?>
+                                        </div>
                                     </td>
 
                                     <td class="text-center">
@@ -325,8 +416,10 @@ include __DIR__ . '/../includes/header_admin.php';
                                                 data-firstname="<?= e($emp['firstname'] ?? '') ?>"
                                                 data-middlename="<?= e($emp['middlename'] ?? '') ?>"
                                                 data-lastname="<?= e($emp['lastname'] ?? '') ?>"
+                                                data-date_of_appointment="<?= e($emp['date_of_appointment'] ?? '') ?>"
+                                                data-sex="<?= e($emp['sex'] ?? '') ?>"
                                                 data-department="<?= e($emp['department'] ?? '') ?>"
-                                                data-position_title="<?= e($emp['position_title'] ?? '') ?>"
+                                                data-employment_status="<?= e($emp['employment_status'] ?? '') ?>"
                                                 data-status="<?= e($emp['status'] ?? '') ?>"
                                                 data-is_active="<?= (int)($emp['is_active'] ?? 0) ?>"
                                             >
@@ -346,7 +439,7 @@ include __DIR__ . '/../includes/header_admin.php';
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="8">
+                                <td colspan="9">
                                     <div class="empty-state">
                                         <div class="empty-state__icon">👤</div>
                                         <div class="empty-state__title">No employees found</div>
@@ -385,8 +478,8 @@ include __DIR__ . '/../includes/header_admin.php';
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Department</label>
-                            <input type="text" name="department" id="edit_department" class="form-control" required>
+                            <label class="form-label">Date of Appointment</label>
+                            <input type="date" name="date_of_appointment" id="edit_date_of_appointment" class="form-control" required>
                         </div>
 
                         <div class="col-md-4">
@@ -404,9 +497,30 @@ include __DIR__ . '/../includes/header_admin.php';
                             <input type="text" name="lastname" id="edit_lastname" class="form-control" required>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Position Title</label>
-                            <input type="text" name="position_title" id="edit_position_title" class="form-control" required>
+                        <div class="col-md-4">
+                            <label class="form-label">Sex</label>
+                            <select name="sex" id="edit_sex" class="form-select" required>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Department</label>
+                            <select name="department" id="edit_department" class="form-select" required>
+                                <?php foreach ($departments as $dept): ?>
+                                    <option value="<?= e($dept) ?>"><?= e($dept) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Employment Status</label>
+                            <select name="employment_status" id="edit_employment_status" class="form-select" required>
+                                <?php foreach ($employmentStatuses as $empStatus): ?>
+                                    <option value="<?= e($empStatus) ?>"><?= e($empStatus) ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
 
                         <div class="col-md-3">
@@ -426,7 +540,7 @@ include __DIR__ . '/../includes/header_admin.php';
                             </select>
                         </div>
 
-                        <div class="col-12">
+                        <div class="col-md-6">
                             <label class="form-label">New Password</label>
                             <input
                                 type="password"
@@ -460,8 +574,10 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('edit_firstname').value = this.getAttribute('data-firstname') || '';
             document.getElementById('edit_middlename').value = this.getAttribute('data-middlename') || '';
             document.getElementById('edit_lastname').value = this.getAttribute('data-lastname') || '';
+            document.getElementById('edit_date_of_appointment').value = this.getAttribute('data-date_of_appointment') || '';
+            document.getElementById('edit_sex').value = this.getAttribute('data-sex') || 'Male';
             document.getElementById('edit_department').value = this.getAttribute('data-department') || '';
-            document.getElementById('edit_position_title').value = this.getAttribute('data-position_title') || '';
+            document.getElementById('edit_employment_status').value = this.getAttribute('data-employment_status') || '';
             document.getElementById('edit_status').value = this.getAttribute('data-status') || 'PENDING';
             document.getElementById('edit_is_active').value = this.getAttribute('data-is_active') || '0';
             document.getElementById('edit_new_password').value = '';
