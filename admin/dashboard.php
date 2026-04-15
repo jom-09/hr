@@ -3,16 +3,22 @@ require_once __DIR__ . '/../includes/auth_admin.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-$totalEmployees = (int)$pdo->query("SELECT COUNT(*) FROM employees")->fetchColumn();
-$pendingEmployees = (int)$pdo->query("SELECT COUNT(*) FROM employees WHERE status='PENDING'")->fetchColumn();
+$totalEmployees    = (int)$pdo->query("SELECT COUNT(*) FROM employees")->fetchColumn();
+$totalJobOrders    = (int)$pdo->query("SELECT COUNT(*) FROM employees WHERE employment_status = 'Job Order'")->fetchColumn();
+$totalMale         = (int)$pdo->query("SELECT COUNT(*) FROM employees WHERE sex = 'Male'")->fetchColumn();
+$totalFemale       = (int)$pdo->query("SELECT COUNT(*) FROM employees WHERE sex = 'Female'")->fetchColumn();
+
+$pendingEmployees  = (int)$pdo->query("SELECT COUNT(*) FROM employees WHERE status='PENDING'")->fetchColumn();
 $approvedEmployees = (int)$pdo->query("SELECT COUNT(*) FROM employees WHERE status='APPROVED'")->fetchColumn();
-$totalCredentials = (int)$pdo->query("SELECT COUNT(*) FROM credentials")->fetchColumn();
+$totalCredentials  = (int)$pdo->query("SELECT COUNT(*) FROM credentials")->fetchColumn();
 
 $rejectedEmployees = max(0, $totalEmployees - ($pendingEmployees + $approvedEmployees));
 
-$pendingPercent  = $totalEmployees > 0 ? round(($pendingEmployees / $totalEmployees) * 100, 1) : 0;
-$approvedPercent = $totalEmployees > 0 ? round(($approvedEmployees / $totalEmployees) * 100, 1) : 0;
-$rejectedPercent = $totalEmployees > 0 ? round(($rejectedEmployees / $totalEmployees) * 100, 1) : 0;
+$pendingPercent   = $totalEmployees > 0 ? round(($pendingEmployees / $totalEmployees) * 100, 1) : 0;
+$approvedPercent  = $totalEmployees > 0 ? round(($approvedEmployees / $totalEmployees) * 100, 1) : 0;
+$jobOrderPercent  = $totalEmployees > 0 ? round(($totalJobOrders / $totalEmployees) * 100, 1) : 0;
+$malePercent      = $totalEmployees > 0 ? round(($totalMale / $totalEmployees) * 100, 1) : 0;
+$femalePercent    = $totalEmployees > 0 ? round(($totalFemale / $totalEmployees) * 100, 1) : 0;
 
 include __DIR__ . '/../includes/header_admin.php';
 ?>
@@ -51,33 +57,33 @@ include __DIR__ . '/../includes/header_admin.php';
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="stat-card stat-card--warning">
                 <div class="stat-card__top">
-                    <span class="stat-card__label">Pending Registrations</span>
-                    <span class="stat-card__icon">🕒</span>
+                    <span class="stat-card__label">Total Job Orders</span>
+                    <span class="stat-card__icon">🧾</span>
                 </div>
-                <div class="stat-card__value"><?= number_format($pendingEmployees) ?></div>
-                <div class="stat-card__meta"><?= $pendingPercent ?>% of total employees</div>
+                <div class="stat-card__value"><?= number_format($totalJobOrders) ?></div>
+                <div class="stat-card__meta"><?= $jobOrderPercent ?>% of total employees</div>
             </div>
         </div>
 
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="stat-card stat-card--success">
                 <div class="stat-card__top">
-                    <span class="stat-card__label">Approved Employees</span>
-                    <span class="stat-card__icon">✅</span>
+                    <span class="stat-card__label">Total Male</span>
+                    <span class="stat-card__icon">👨</span>
                 </div>
-                <div class="stat-card__value"><?= number_format($approvedEmployees) ?></div>
-                <div class="stat-card__meta"><?= $approvedPercent ?>% approval rate</div>
+                <div class="stat-card__value"><?= number_format($totalMale) ?></div>
+                <div class="stat-card__meta"><?= $malePercent ?>% of total employees</div>
             </div>
         </div>
 
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="stat-card stat-card--neutral">
                 <div class="stat-card__top">
-                    <span class="stat-card__label">Total Credentials</span>
-                    <span class="stat-card__icon">📁</span>
+                    <span class="stat-card__label">Total Female</span>
+                    <span class="stat-card__icon">👩</span>
                 </div>
-                <div class="stat-card__value"><?= number_format($totalCredentials) ?></div>
-                <div class="stat-card__meta">Uploaded and stored credentials</div>
+                <div class="stat-card__value"><?= number_format($totalFemale) ?></div>
+                <div class="stat-card__meta"><?= $femalePercent ?>% of total employees</div>
             </div>
         </div>
     </div>
@@ -88,7 +94,7 @@ include __DIR__ . '/../includes/header_admin.php';
                 <div class="card-header-custom">
                     <div>
                         <h4 class="card-title-custom">Employee Status Overview</h4>
-                        <p class="card-subtitle-custom">Visual summary of employee registration status</p>
+                        <p class="card-subtitle-custom">Visual summary of employee and credential counts</p>
                     </div>
                 </div>
                 <div class="chart-wrap chart-wrap--bar">
@@ -101,8 +107,8 @@ include __DIR__ . '/../includes/header_admin.php';
             <div class="dashboard-card chart-card">
                 <div class="card-header-custom">
                     <div>
-                        <h4 class="card-title-custom">Registration Distribution</h4>
-                        <p class="card-subtitle-custom">Status breakdown by percentage</p>
+                        <h4 class="card-title-custom">Sex Distribution</h4>
+                        <p class="card-subtitle-custom">Male and female employee breakdown</p>
                     </div>
                 </div>
                 <div class="chart-wrap chart-wrap--doughnut">
@@ -142,6 +148,37 @@ include __DIR__ . '/../includes/header_admin.php';
                                 <td>Total registered employees in the system</td>
                                 <td><span class="status-badge status-badge--blue">Active Monitor</span></td>
                             </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="table-title">Job Orders</div>
+                                    <div class="table-text-muted">Job Order employees</div>
+                                </td>
+                                <td><?= number_format($totalJobOrders) ?></td>
+                                <td><?= $jobOrderPercent ?>% of all employees are Job Orders</td>
+                                <td><span class="status-badge status-badge--yellow">Tracked</span></td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="table-title">Male Employees</div>
+                                    <div class="table-text-muted">Male employee records</div>
+                                </td>
+                                <td><?= number_format($totalMale) ?></td>
+                                <td><?= $malePercent ?>% of all employees are male</td>
+                                <td><span class="status-badge status-badge--green">Updated</span></td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="table-title">Female Employees</div>
+                                    <div class="table-text-muted">Female employee records</div>
+                                </td>
+                                <td><?= number_format($totalFemale) ?></td>
+                                <td><?= $femalePercent ?>% of all employees are female</td>
+                                <td><span class="status-badge status-badge--dark">Updated</span></td>
+                            </tr>
+
                             <tr>
                                 <td>
                                     <div class="table-title">Pending</div>
@@ -151,6 +188,7 @@ include __DIR__ . '/../includes/header_admin.php';
                                 <td><?= $pendingPercent ?>% of all employees are pending</td>
                                 <td><span class="status-badge status-badge--yellow">Needs Review</span></td>
                             </tr>
+
                             <tr>
                                 <td>
                                     <div class="table-title">Approved</div>
@@ -160,6 +198,7 @@ include __DIR__ . '/../includes/header_admin.php';
                                 <td><?= $approvedPercent ?>% of all employees are approved</td>
                                 <td><span class="status-badge status-badge--green">Stable</span></td>
                             </tr>
+
                             <tr>
                                 <td>
                                     <div class="table-title">Credentials</div>
@@ -203,10 +242,10 @@ include __DIR__ . '/../includes/header_admin.php';
                         <small><?= number_format($totalCredentials) ?> stored</small>
                     </a>
 
-                    <a href="dashboard.php" class="quick-action-box">
-                        <span class="quick-action-icon">📊</span>
-                        <span class="quick-action-title">Refresh Dashboard</span>
-                        <small>Update admin view</small>
+                    <a href="archive.php" class="quick-action-box">
+                        <span class="quick-action-icon">🗃️</span>
+                        <span class="quick-action-title">Open Archive</span>
+                        <small>Manage archived records</small>
                     </a>
                 </div>
             </div>
@@ -226,14 +265,16 @@ document.addEventListener('DOMContentLoaded', function () {
         new Chart(employeeBarCtx, {
             type: 'bar',
             data: {
-                labels: ['Pending', 'Approved', 'Credentials'],
+                labels: ['Employees', 'Job Orders', 'Male', 'Female', 'Credentials'],
                 datasets: [{
                     label: 'System Count',
-                    data: [<?= $pendingEmployees ?>, <?= $approvedEmployees ?>, <?= $totalCredentials ?>],
+                    data: [<?= $totalEmployees ?>, <?= $totalJobOrders ?>, <?= $totalMale ?>, <?= $totalFemale ?>, <?= $totalCredentials ?>],
                     backgroundColor: [
+                        'rgba(40, 57, 108, 0.82)',
                         'rgba(212, 172, 13, 0.75)',
                         'rgba(46, 125, 50, 0.78)',
-                        'rgba(40, 57, 108, 0.82)'
+                        'rgba(13, 110, 253, 0.75)',
+                        'rgba(108, 117, 125, 0.82)'
                     ],
                     borderRadius: 12,
                     borderSkipped: false,
@@ -286,13 +327,12 @@ document.addEventListener('DOMContentLoaded', function () {
         new Chart(employeeDoughnutCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Pending', 'Approved', 'Others'],
+                labels: ['Male', 'Female'],
                 datasets: [{
-                    data: [<?= $pendingEmployees ?>, <?= $approvedEmployees ?>, <?= $rejectedEmployees ?>],
+                    data: [<?= $totalMale ?>, <?= $totalFemale ?>],
                     backgroundColor: [
-                        'rgba(212, 172, 13, 0.82)',
                         'rgba(46, 125, 50, 0.82)',
-                        'rgba(40, 57, 108, 0.82)'
+                        'rgba(13, 110, 253, 0.82)'
                     ],
                     borderColor: '#F6F4E8',
                     borderWidth: 6,

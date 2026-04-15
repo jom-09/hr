@@ -98,9 +98,7 @@ $csrf = generate_csrf_token();
         <div class="auth-panel auth-panel--right">
             <div class="auth-card auth-card--login">
 
-                <a href="../index.php" class="auth-back-btn">
-                    ← Back to Home
-                </a>
+                
                 <div class="auth-card-header">
                     <div class="auth-card-icon">🔐</div>
                     <h2>HR / Admin Login</h2>
@@ -142,6 +140,9 @@ $csrf = generate_csrf_token();
                     </div>
 
                     <button type="submit" class="auth-submit-btn">Login to Admin Panel</button>
+                    <a href="../index.php" class="auth-back-btn">
+                    ← Back to Home
+                </a>
                 </form>
             </div>
         </div>

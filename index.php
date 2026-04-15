@@ -19,29 +19,9 @@ $announcements = $pdo->query("
     LIMIT 6
 ")->fetchAll(PDO::FETCH_ASSOC);
 
-$vacancies = [
-    [
-        'position' => 'Administrative Aide',
-        'office'   => 'Human Resource Office',
-        'status'   => 'Open',
-        'type'     => 'Full-time',
-        'details'  => 'Assists in records management, document handling, and office support tasks.'
-    ],
-    [
-        'position' => 'IT Support Staff',
-        'office'   => 'MIS / ICT Unit',
-        'status'   => 'Open',
-        'type'     => 'Contractual',
-        'details'  => 'Provides technical assistance, system support, and maintenance of office devices and software.'
-    ],
-    [
-        'position' => 'Clerk',
-        'office'   => 'Municipal Office',
-        'status'   => 'Open',
-        'type'     => 'Full-time',
-        'details'  => 'Handles encoding, filing, and daily clerical operations.'
-    ],
-];
+$vacancies = [];
+$stmtVacancies = $pdo->query("SELECT * FROM vacancies WHERE deadline >= CURDATE() ORDER BY deadline ASC, created_at DESC");
+$vacancies = $stmtVacancies->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -60,7 +40,6 @@ $vacancies = [
         <div class="container-fluid px-4 px-lg-5">
             <div class="hero-topbar-inner">
                 <a href="#home" class="hero-brand">
-                    <div class="hero-brand-logo">EC</div>
                     <div class="hero-brand-text">
                         <span class="hero-brand-title"><?= e(APP_NAME) ?></span>
                     </div>
@@ -105,16 +84,8 @@ $vacancies = [
 
                         <div class="hero-quick-info">
                             <div class="hero-info-card">
-                                <h5>Secure Access</h5>
-                                <p>Employee and HR portal with organized account entry points.</p>
-                            </div>
-                            <div class="hero-info-card">
-                                <h5>Centralized Records</h5>
-                                <p>Store and manage employee credentials in one system.</p>
-                            </div>
-                            <div class="hero-info-card">
-                                <h5>Hiring Updates</h5>
-                                <p>Vacancy posts and announcements can be displayed here.</p>
+                                <h5>PRIME HR</h5>
+                                <p>Dito ilalagay</p>
                             </div>
                         </div>
                     </div>
@@ -169,36 +140,51 @@ $vacancies = [
 </section>
 
     <!-- VACANCIES -->
-    <section id="vacancies" class="landing-section section-dark">
-        <div class="container-fluid px-4 px-lg-5">
-            <div class="section-heading text-center text-white">
-                <span class="section-tag section-tag-light">Opportunities</span>
-                <h2>List of Vacancies</h2>
-                <p>Available job openings and hiring opportunities in LGU Aglipay.</p>
-            </div>
+    <section class="vacancies-section py-5" id="vacancies">
+    <div class="container">
+        <div class="section-title text-center mb-4">
+            <h2>Vacancies</h2>
+            <p>Available positions open for application.</p>
+        </div>
 
-            <div class="row g-4">
-                <?php foreach ($vacancies as $vacancy): ?>
-                    <div class="col-md-6 col-xl-4">
-                        <div class="vacancy-card h-100">
-                            <div class="vacancy-top">
-                                <span class="vacancy-badge"><?= e($vacancy['status']) ?></span>
-                                <span class="vacancy-type"><?= e($vacancy['type']) ?></span>
-                            </div>
-
-                            <h4><?= e($vacancy['position']) ?></h4>
-                            <h6><?= e($vacancy['office']) ?></h6>
-                            <p><?= e($vacancy['details']) ?></p>
-
-                            <div class="vacancy-footer">
-                                <a href="employee/register.php" class="btn vacancy-btn">Apply / Register</a>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+        <div class="vacancies-table-wrap">
+            <div class="table-responsive">
+                <table class="table vacancies-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Employment Status</th>
+                            <th>Department / Office</th>
+                            <th>Need</th>
+                            <th>Qualification</th>
+                            <th>Deadline</th>
+                            <th>Duties and Functions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($vacancies)): ?>
+                            <?php foreach ($vacancies as $vacancy): ?>
+                                <tr>
+                                    <td><strong><?= e($vacancy['position']) ?></strong></td>
+                                    <td><?= e($vacancy['employment_status']) ?></td>
+                                    <td><?= e($vacancy['department_office']) ?></td>
+                                    <td><?= (int)$vacancy['need_count'] ?></td>
+                                    <td><?= nl2br(e($vacancy['qualification'])) ?></td>
+                                    <td><?= e(date('F d, Y', strtotime($vacancy['deadline']))) ?></td>
+                                    <td><?= nl2br(e($vacancy['duties_functions'])) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">No vacancies available at the moment.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- CONTACT -->
     <section id="contact" class="landing-section section-light">

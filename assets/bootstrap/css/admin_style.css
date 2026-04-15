@@ -1079,7 +1079,9 @@ body {
         width: 100%;
     }
 }
-
+.icon-action-btn i {
+    font-size: 16px;
+}
 
 
 /* =====================================
@@ -1385,5 +1387,82 @@ body {
     .auth-input,
     .auth-submit-btn {
         height: 52px;
+    }
+}
+
+.icon-action-btn--restore,
+.icon-action-btn--view {
+    background: #0d6efd;
+}
+
+.icon-action-btn--restore:hover,
+.icon-action-btn--view:hover {
+    background: #0b5ed7;
+}
+
+
+
+/* =====================================
+   VACANCIES PAGE
+===================================== */
+
+.vacancy-form-wrap {
+    padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.vacancy-form-label {
+    font-weight: 600;
+    color: #234c6a;
+    margin-bottom: 0.45rem;
+}
+
+.vacancy-input {
+    border-radius: 14px;
+    border: 1px solid #d9e5f2;
+    min-height: 46px;
+    padding: 0.75rem 0.95rem;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+
+.vacancy-input:focus {
+    border-color: #4a70a9;
+    box-shadow: 0 0 0 0.18rem rgba(74, 112, 169, 0.14);
+}
+
+.vacancy-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4a70a9 0%, #6d97d1 100%);
+    color: #fff;
+    font-weight: 600;
+    padding: 0.8rem 1.2rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 8px 18px rgba(74, 112, 169, 0.18);
+}
+
+.primary-btn:hover {
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(74, 112, 169, 0.24);
+}
+
+.primary-btn:focus {
+    color: #fff;
+    box-shadow: 0 0 0 0.2rem rgba(74, 112, 169, 0.18);
+}
+
+@media (max-width: 767.98px) {
+    .vacancy-form-wrap {
+        padding: 1rem;
     }
 }

@@ -12,36 +12,43 @@
     <ul class="sidebar-menu">
         <li class="<?= basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? 'active' : '' ?>">
             <a href="dashboard.php">
-                <span class="menu-icon">📊</span>
                 <span>Dashboard</span>
             </a>
         </li>
 
         <li class="<?= basename($_SERVER['PHP_SELF']) === 'pending_registrations.php' ? 'active' : '' ?>">
             <a href="pending_registrations.php">
-                <span class="menu-icon">📝</span>
                 <span>Pending Registrations</span>
             </a>
         </li>
 
         <li class="<?= basename($_SERVER['PHP_SELF']) === 'credentials.php' ? 'active' : '' ?>">
             <a href="credentials.php">
-                <span class="menu-icon">📁</span>
                 <span>Credentials</span>
             </a>
         </li>
 
         <li class="<?= basename($_SERVER['PHP_SELF']) === 'employees.php' ? 'active' : '' ?>">
             <a href="employees.php">
-                <span class="menu-icon">👨‍💼</span>
                 <span>Employees</span>
             </a>
         </li>
 
         <li class="<?= basename($_SERVER['PHP_SELF']) === 'announcements.php' ? 'active' : '' ?>">
             <a href="announcements.php">
-                <span class="menu-icon">📢</span>
                 <span>Announcements</span>
+            </a>
+        </li>
+
+        <li class="<?= basename($_SERVER['PHP_SELF']) === 'vacancies.php' ? 'active' : '' ?>">
+            <a href="vacancies.php">
+                <span>Vacancies</span>
+            </a>
+        </li>
+
+        <li class="<?= basename($_SERVER['PHP_SELF']) === 'archive.php' ? 'active' : '' ?>">
+            <a href="archive.php">
+                <span>Archive</span>
             </a>
         </li>
 
