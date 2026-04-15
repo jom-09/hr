@@ -1237,6 +1237,9 @@ select.form-control-custom {
 
 
 /* =========================
+   LANDING PAGE REDESIGN
+========================= */
+/* =========================
    LANDING PAGE
 ========================= */
 :root {
@@ -1256,6 +1259,7 @@ select.form-control-custom {
 
 html {
     scroll-behavior: smooth;
+    scroll-padding-top: 110px;
 }
 
 body.ecms-landing-body {
@@ -1267,20 +1271,43 @@ body.ecms-landing-body {
 
 /* TOPBAR */
 .hero-topbar {
-    position: absolute;
+    position: sticky;
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 20;
-    padding: 18px 0;
+    z-index: 999;
+    padding: 16px 0;
+    background: rgba(10, 24, 40, 0.45);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    transition: var(--transition);
 }
 
+
+
 .hero-topbar-inner {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 18px;
+}
+
+.hero-topbar-left {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.hero-topbar-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-topbar-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .hero-brand {
@@ -1290,19 +1317,6 @@ body.ecms-landing-body {
     text-decoration: none;
 }
 
-.hero-brand-logo {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.75));
-    color: var(--secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    box-shadow: var(--shadow-sm);
-}
-
 .hero-brand-title {
     font-size: 1rem;
     font-weight: 700;
@@ -1310,26 +1324,37 @@ body.ecms-landing-body {
     line-height: 1.2;
 }
 
-.hero-brand-text small {
-    color: rgba(255,255,255,0.8);
-    font-size: 0.82rem;
-}
-
 .hero-nav {
     display: flex;
     align-items: center;
-    gap: 26px;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 999px;
+    padding: 8px 10px;
 }
 
-.hero-nav a {
+.hero-nav a,
+.nav-link-item {
     color: rgba(255,255,255,0.92);
     text-decoration: none;
     font-weight: 500;
     transition: var(--transition);
+    padding: 10px 16px;
+    border-radius: 999px;
 }
 
-.hero-nav a:hover {
+.hero-nav a:hover,
+.nav-link-item:hover {
     color: #fff;
+    background: rgba(255,255,255,0.10);
+}
+
+.nav-link-item.active {
+    background: #ffffff;
+    color: var(--secondary);
+    font-weight: 700;
 }
 
 .hero-auth-buttons {
@@ -1337,6 +1362,7 @@ body.ecms-landing-body {
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .hero-btn {
@@ -1369,13 +1395,13 @@ body.ecms-landing-body {
 }
 
 .hero-btn-primary {
-    background: var(--accent);
+    background: var(--white);
     color: #1f2937;
     border: none;
 }
 
 .hero-btn-primary:hover {
-    background: #d89d16;
+    background: #7c7c7a;
     color: #111827;
 }
 
@@ -1386,6 +1412,9 @@ body.ecms-landing-body {
     display: flex;
     align-items: center;
     overflow: hidden;
+}
+
+.section-hero-alt {
     background:
         linear-gradient(135deg, rgba(10, 35, 66, 0.86), rgba(13, 110, 253, 0.58)),
         url("../../img/cover2.jpg") center center / cover no-repeat;
@@ -1409,8 +1438,12 @@ body.ecms-landing-body {
 }
 
 .hero-content-box {
-    padding-right: 20px;
     color: #fff;
+}
+
+.home-welcome-box {
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .hero-kicker {
@@ -1441,112 +1474,7 @@ body.ecms-landing-body {
     line-height: 1.85;
     color: rgba(255,255,255,0.92);
     max-width: 760px;
-    margin-bottom: 28px;
-}
-
-.hero-main-actions {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    margin-bottom: 30px;
-}
-
-.hero-cta-primary,
-.hero-cta-secondary {
-    border-radius: 999px;
-    padding: 13px 24px;
-    font-weight: 700;
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.hero-cta-primary {
-    background: #fff;
-    color: var(--secondary);
-}
-
-.hero-cta-primary:hover {
-    background: #eef2f7;
-    color: var(--secondary);
-}
-
-.hero-cta-secondary {
-    background: transparent;
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.55);
-}
-
-.hero-cta-secondary:hover {
-    background: rgba(255,255,255,0.12);
-    color: #fff;
-}
-
-.hero-quick-info {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-}
-
-.hero-info-card {
-    background: rgba(255,255,255,0.11);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: var(--radius-md);
-    padding: 20px;
-    backdrop-filter: blur(8px);
-    box-shadow: var(--shadow-sm);
-}
-
-.hero-info-card h5 {
-    font-size: 1.02rem;
-    margin-bottom: 8px;
-    color: #fff;
-    font-weight: 700;
-}
-
-.hero-info-card p {
-    margin: 0;
-    color: rgba(255,255,255,0.85);
-    font-size: 0.95rem;
-    line-height: 1.6;
-}
-
-.hero-side-panel {
-    display: grid;
-    gap: 18px;
-}
-
-.hero-side-card {
-    background: rgba(255,255,255,0.14);
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 24px;
-    padding: 24px;
-    color: #fff;
-    backdrop-filter: blur(10px);
-    box-shadow: var(--shadow-md);
-}
-
-.hero-side-icon-wrap {
-    width: 62px;
-    height: 62px;
-    border-radius: 18px;
-    background: rgba(255,255,255,0.18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    margin-bottom: 14px;
-}
-
-.hero-side-card h4 {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-    font-weight: 700;
-}
-
-.hero-side-card p {
-    margin: 0;
-    color: rgba(255,255,255,0.88);
-    line-height: 1.7;
+    margin-bottom: 0;
 }
 
 /* COMMON SECTIONS */
@@ -1554,6 +1482,16 @@ body.ecms-landing-body {
     padding: 90px 0;
     position: relative;
     overflow: hidden;
+}
+
+.section-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.landing-section .position-relative {
+    z-index: 2;
 }
 
 .section-heading {
@@ -1583,64 +1521,137 @@ body.ecms-landing-body {
     margin-bottom: 14px;
 }
 
-/* ANNOUNCEMENTS BACKGROUND */
-#announcements {
+.section-theme-light .section-tag {
+    background: rgba(13, 110, 253, 0.10);
+    color: var(--primary-dark);
+}
+
+.section-theme-dark .section-tag {
+    background: rgba(255,255,255,0.14);
+    color: #fff;
+}
+
+.section-theme-dark .section-heading h2,
+.section-theme-dark .section-heading p {
+    color: #fff;
+}
+
+/* ALTERNATE SECTION BACKGROUNDS */
+.section-bg-about {
     background:
         linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)),
         url("../../img/cover1.jpg") center center / cover no-repeat;
 }
 
-#announcements .section-tag {
-    background: rgba(13, 110, 253, 0.10);
-    color: var(--primary-dark);
-}
-
-#announcements .section-heading p {
-    color: var(--text-muted);
-}
-
-/* VACANCIES BACKGROUND */
-#vacancies {
+.section-bg-announcements {
     background:
         linear-gradient(135deg, rgba(18, 48, 74, 0.90), rgba(13, 110, 253, 0.72)),
         url("../../img/cover3.jpg") center center / cover no-repeat;
 }
 
-#vacancies .section-tag {
-    background: rgba(255,255,255,0.14);
-    color: #fff;
-}
-
-#vacancies .section-heading h2,
-#vacancies .section-heading p {
-    color: #fff;
-}
-
-/* CONTACT BACKGROUND */
-#contact {
+.section-bg-calendar {
     background:
         linear-gradient(rgba(247,249,252,0.94), rgba(247,249,252,0.94)),
         url("../../img/cover5.png") center center / cover no-repeat;
 }
 
-#contact .section-tag {
-    background: rgba(240, 180, 41, 0.18);
-    color: #8a5a00;
+.section-bg-vacancies {
+    background:
+        linear-gradient(135deg, rgba(18, 48, 74, 0.90), rgba(13, 110, 253, 0.72)),
+        url("../../img/cover2.jpg") center center / cover no-repeat;
 }
 
-#contact .section-heading p {
+.section-bg-contact {
+    background:
+        linear-gradient(rgba(247,249,252,0.94), rgba(247,249,252,0.94)),
+        url("../../img/cover1.jpg") center center / cover no-repeat;
+}
+
+/* ABOUT */
+.about-card {
+    background: rgba(255,255,255,0.90);
+    border-radius: 26px;
+    padding: 28px;
+    box-shadow: var(--shadow-md);
+}
+
+.about-side-box {
+    display: grid;
+    gap: 16px;
+}
+
+.about-mini-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.about-mini-card i {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.about-mini-card h5 {
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+.about-mini-card p {
+    margin: 0;
     color: var(--text-muted);
+    line-height: 1.7;
+}
+
+.about-content {
+    background: linear-gradient(135deg, rgba(18,48,74,0.95), rgba(13,110,253,0.85));
+    border-radius: 22px;
+    padding: 32px 28px;
+    color: #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+.about-label {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.14);
+    margin-bottom: 18px;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.about-content h3 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 14px;
+}
+
+.about-content p {
+    color: rgba(255,255,255,0.92);
+    line-height: 1.8;
 }
 
 /* ANNOUNCEMENT CARD */
 .announcement-card {
-    background: rgba(255,255,255,0.95);
+    background: rgba(255,255,255,0.96);
     border-radius: 22px;
     padding: 24px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.08);
     border: 1px solid rgba(0,0,0,0.04);
-    transition: var(--transition);
-    height: 100%;
+    transition: all 0.3s ease;
 }
 
 .announcement-card:hover {
@@ -1670,82 +1681,55 @@ body.ecms-landing-body {
     line-height: 1.75;
 }
 
-/* VACANCY CARD */
-.vacancy-card {
-    background: rgba(255,255,255,0.96);
-    border-radius: 22px;
-    padding: 24px;
+.announcement-card .btn {
+    font-weight: 600;
+}
+
+.announcement-card .btn-outline-primary {
+    border-width: 2px;
+}
+
+/* TABLE WRAPPERS ONLY - HINDI BINAGO ANG FORMAT NG TABLE */
+.calendar-table-wrap,
+.vacancies-table-wrap {
+    background: rgba(255,255,255,0.94);
+    border-radius: 20px;
+    padding: 0;
     box-shadow: var(--shadow-md);
-    transition: var(--transition);
-    height: 100%;
+    overflow: hidden;
 }
 
-.vacancy-card:hover {
-    transform: translateY(-6px);
+/* KEEP TABLE FORMAT */
+.calendar-table,
+.vacancies-table {
+    margin-bottom: 0;
+    background: transparent;
 }
 
-.vacancy-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
+.calendar-table thead th,
+.vacancies-table thead th {
+    white-space: nowrap;
 }
 
-.vacancy-badge {
-    display: inline-block;
-    background: #d1fae5;
-    color: #065f46;
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 0.83rem;
-    font-weight: 700;
+/* VACANCIES TEXT ONLY WHITE */
+.vacancies-section .section-heading h2,
+.vacancies-section .section-heading p {
+    color: #ffffff;
 }
 
-.vacancy-type {
-    display: inline-block;
-    background: #e0ecff;
-    color: #1d4ed8;
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 0.83rem;
-    font-weight: 700;
+.vacancies-section table th,
+.vacancies-section table td,
+.vacancies-section table strong {
+    color: #ffffff;
 }
 
-.vacancy-card h4 {
-    font-size: 1.25rem;
-    font-weight: 800;
-    margin-bottom: 8px;
-    color: var(--text-dark);
+.vacancies-section .vacancies-table-wrap {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(8px);
 }
 
-.vacancy-card h6 {
-    font-size: 0.95rem;
-    color: var(--primary);
-    margin-bottom: 12px;
-    font-weight: 700;
-}
-
-.vacancy-card p {
-    color: var(--text-muted);
-    line-height: 1.7;
-    margin-bottom: 20px;
-}
-
-.vacancy-btn {
-    width: 100%;
-    border-radius: 14px;
-    background: var(--primary);
-    color: #fff;
-    font-weight: 700;
-    padding: 12px 18px;
-    border: none;
-}
-
-.vacancy-btn:hover {
-    background: var(--primary-dark);
-    color: #fff;
+.vacancies-section .text-muted {
+    color: rgba(255,255,255,0.8) !important;
 }
 
 /* CONTACT CARD */
@@ -1800,14 +1784,23 @@ body.ecms-landing-body {
 
 /* RESPONSIVE */
 @media (max-width: 1199px) {
-    .hero-quick-info {
+    .hero-topbar-inner {
         grid-template-columns: 1fr;
+    }
+
+    .hero-topbar-left,
+    .hero-topbar-center,
+    .hero-topbar-right {
+        justify-content: center;
+    }
+
+    .hero-auth-buttons {
+        justify-content: center;
     }
 }
 
 @media (max-width: 991px) {
     .hero-topbar {
-        position: relative;
         background: #0f2740;
     }
 
@@ -1817,12 +1810,11 @@ body.ecms-landing-body {
 
     .hero-row {
         min-height: auto;
-        padding-top: 40px;
+        padding-top: 60px;
     }
 
-    .hero-content-box {
-        padding-right: 0;
-        margin-bottom: 30px;
+    .landing-section {
+        padding: 70px 0;
     }
 }
 
@@ -1839,45 +1831,4 @@ body.ecms-landing-body {
     .hero-main-title {
         font-size: 2.3rem;
     }
-
-    .landing-section {
-        padding: 70px 0;
-    }
-}
-.announcement-card .btn {
-    font-weight: 600;
-}
-.announcement-card {
-    background: rgba(255,255,255,0.96);
-    border-radius: 22px;
-    padding: 24px;
-    box-shadow: 0 12px 28px rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.04);
-    transition: all 0.3s ease;
-}
-
-.announcement-card:hover {
-    transform: translateY(-5px);
-}
-
-.announcement-card .btn-outline-primary {
-    border-width: 2px;
-}
-
-/* ===== VACANCIES TEXT ONLY WHITE ===== */
-.vacancies-section .section-title h2,
-.vacancies-section .section-title p {
-    color: #ffffff;
-}
-
-/* Table text ONLY */
-.vacancies-section table th,
-.vacancies-section table td,
-.vacancies-section table strong {
-    color: #ffffff;
-}
-
-/* Empty message */
-.vacancies-section .text-muted {
-    color: rgba(255,255,255,0.8) !important;
 }
