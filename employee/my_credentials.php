@@ -6,6 +6,19 @@ require_once __DIR__ . '/../includes/functions.php';
 $errors = [];
 $success = '';
 
+function credential_label($type) {
+    $labels = [
+        'PDS' => 'PDS',
+        'SALN' => 'SALN',
+        'ELIGIBILITY' => 'Eligibility',
+        'SEMINAR_CERTIFICATE' => 'Seminar/Certificate',
+        'TOR' => 'TOR',
+        'APPOINTMENT_PAPER' => 'Appointment Paper'
+    ];
+
+    return $labels[$type] ?? $type;
+}
+
 /* =========================
    DELETE LOGIC
 ========================= */
@@ -14,19 +27,21 @@ if (is_post() && isset($_POST['delete_id'])) {
 
     $id = (int)$_POST['delete_id'];
 
-    // kunin muna file
-    $stmt = $pdo->prepare("SELECT * FROM credentials WHERE id=? AND employee_id=?");
+    $stmt = $pdo->prepare("SELECT * FROM credentials WHERE id = ? AND employee_id = ?");
     $stmt->execute([$id, $_SESSION['employee_id']]);
     $file = $stmt->fetch();
 
     if ($file) {
-        // delete physical file
-        if (file_exists($file['file_path'])) {
-            unlink($file['file_path']);
+        $dbPath = $file['file_path'];
+
+        // Convert relative path to absolute server path
+        $absolutePath = __DIR__ . '/../' . ltrim($dbPath, '/');
+
+        if (!empty($dbPath) && file_exists($absolutePath)) {
+            unlink($absolutePath);
         }
 
-        // delete sa DB
-        $stmt = $pdo->prepare("DELETE FROM credentials WHERE id=?");
+        $stmt = $pdo->prepare("DELETE FROM credentials WHERE id = ?");
         $stmt->execute([$id]);
 
         $success = "Credential deleted successfully.";
@@ -38,7 +53,7 @@ if (is_post() && isset($_POST['delete_id'])) {
 /* =========================
    FETCH DATA
 ========================= */
-$stmt = $pdo->prepare("SELECT * FROM credentials WHERE employee_id=? ORDER BY uploaded_at DESC");
+$stmt = $pdo->prepare("SELECT * FROM credentials WHERE employee_id = ? ORDER BY uploaded_at DESC");
 $stmt->execute([$_SESSION['employee_id']]);
 $data = $stmt->fetchAll();
 
@@ -106,7 +121,7 @@ include __DIR__ . '/../includes/header_employee.php';
                         <tr>
                             <td>
                                 <span class="badge-type">
-                                    <?= e($row['credential_type']) ?>
+                                    <?= e(credential_label($row['credential_type'])) ?>
                                 </span>
                             </td>
 
@@ -119,21 +134,17 @@ include __DIR__ . '/../includes/header_employee.php';
                             </td>
 
                             <td class="text-end action-buttons">
-
-                                <!-- VIEW -->
-                                <a href="<?= e($row['file_path']) ?>" target="_blank" class="btn-view">
+                                <a href="../<?= e($row['file_path']) ?>" target="_blank" class="btn-view">
                                     View
                                 </a>
 
-                                <!-- DELETE -->
                                 <form method="POST" class="delete-form" onsubmit="return confirmDelete();">
                                     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
-                                    <input type="hidden" name="delete_id" value="<?= $row['id'] ?>">
+                                    <input type="hidden" name="delete_id" value="<?= (int)$row['id'] ?>">
                                     <button type="submit" class="btn-delete">
                                         Delete
                                     </button>
                                 </form>
-
                             </td>
                         </tr>
                         <?php endforeach; ?>

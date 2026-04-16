@@ -1466,3 +1466,83 @@ body {
         padding: 1rem;
     }
 }
+
+
+
+
+/* =====================================
+ACTIVITIES PAGE
+===================================== */
+
+
+.activity-admin-list{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.activity-admin-card{
+    background:#fff;
+    border:1px solid rgba(0,0,0,0.06);
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.06);
+}
+
+.activity-admin-card__top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+
+.sidebar-menu .has-submenu {
+    list-style: none;
+}
+
+.sidebar-menu .submenu-toggle {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 12px;
+}
+
+.sidebar-menu .has-submenu.active .submenu-toggle,
+.sidebar-menu .submenu li.active a {
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+}
+
+.sidebar-menu .submenu {
+    margin: 6px 0 0 0;
+    padding: 0 0 0 14px;
+    list-style: none;
+}
+
+.sidebar-menu .submenu li {
+    margin-bottom: 6px;
+}
+
+.sidebar-menu .submenu li a {
+    display: block;
+    padding: 10px 14px;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 10px;
+    font-size: 0.95rem;
+}
+
+.sidebar-menu .submenu-arrow {
+    font-size: 0.9rem;
+    opacity: 0.85;
+}

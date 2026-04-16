@@ -6,6 +6,19 @@ require_once __DIR__ . '/../includes/functions.php';
 $success = '';
 $error = '';
 
+function credential_label($type) {
+    $labels = [
+        'PDS' => 'PDS',
+        'SALN' => 'SALN',
+        'ELIGIBILITY' => 'Eligibility',
+        'SEMINAR_CERTIFICATE' => 'Seminar/Certificate',
+        'TOR' => 'TOR',
+        'APPOINTMENT_PAPER' => 'Appointment Paper'
+    ];
+
+    return $labels[$type] ?? $type;
+}
+
 /*
 |--------------------------------------------------------------------------
 | Detect password column in employees
@@ -31,6 +44,7 @@ try {
 |--------------------------------------------------------------------------
 */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
     $action = $_POST['action'] ?? '';
 
     try {
@@ -88,20 +102,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $del = $pdo->prepare("DELETE FROM archived_employees WHERE id = ?");
             $del->execute([$id]);
 
-            $success = 'Employee restored successfully.';
+            header('Location: archive.php?success=employee_restored');
+            exit;
         }
 
         if ($action === 'delete_employee_permanently') {
             $id = (int)($_POST['id'] ?? 0);
+
             $stmt = $pdo->prepare("DELETE FROM archived_employees WHERE id = ?");
             $stmt->execute([$id]);
-            $success = 'Archived employee permanently deleted.';
+
+            header('Location: archive.php?success=employee_deleted');
+            exit;
         }
 
         if ($action === 'restore_credential') {
             $id = (int)($_POST['id'] ?? 0);
 
-            $stmt = $pdo->prepare("SELECT * FROM archived_credentials WHERE id = ?");
+            $stmt = $pdo->prepare("SELECT * FROM credentials WHERE id = ? AND is_deleted = 1");
             $stmt->execute([$id]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -109,36 +127,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Archived credential not found.');
             }
 
-            $insert = $pdo->prepare("
-                INSERT INTO credentials (
-                    employee_id, credential_type, original_name, file_path, uploaded_at
-                ) VALUES (?, ?, ?, ?, ?)
-            ");
+            $restore = $pdo->prepare("UPDATE credentials SET is_deleted = 0 WHERE id = ?");
+            $restore->execute([$id]);
 
-            $insert->execute([
-                $row['employee_id'],
-                $row['credential_type'],
-                $row['original_name'],
-                $row['file_path'],
-                $row['uploaded_at']
-            ]);
-
-            $del = $pdo->prepare("DELETE FROM archived_credentials WHERE id = ?");
-            $del->execute([$id]);
-
-            $success = 'Credential restored successfully.';
+            header('Location: archive.php?success=credential_restored');
+            exit;
         }
 
         if ($action === 'delete_credential_permanently') {
             $id = (int)($_POST['id'] ?? 0);
-            $stmt = $pdo->prepare("DELETE FROM archived_credentials WHERE id = ?");
+
+            $stmt = $pdo->prepare("SELECT * FROM credentials WHERE id = ? AND is_deleted = 1");
             $stmt->execute([$id]);
-            $success = 'Archived credential permanently deleted.';
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$row) {
+                throw new Exception('Archived credential not found.');
+            }
+
+            $absolutePath = __DIR__ . '/../' . ltrim((string)$row['file_path'], '/');
+
+            if (!empty($row['file_path']) && file_exists($absolutePath)) {
+                unlink($absolutePath);
+            }
+
+            $del = $pdo->prepare("DELETE FROM credentials WHERE id = ?");
+            $del->execute([$id]);
+
+            header('Location: archive.php?success=credential_deleted');
+            exit;
         }
 
     } catch (Throwable $e) {
         $error = $e->getMessage();
     }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Success messages
+|--------------------------------------------------------------------------
+*/
+if (isset($_GET['success'])) {
+    $messages = [
+        'employee_restored'   => 'Employee restored successfully.',
+        'employee_deleted'    => 'Archived employee permanently deleted.',
+        'credential_restored' => 'Credential restored successfully.',
+        'credential_deleted'  => 'Archived credential permanently deleted.',
+    ];
+
+    $successKey = $_GET['success'];
+    $success = $messages[$successKey] ?? '';
 }
 
 /*
@@ -152,9 +191,19 @@ $archivedEmployees = $pdo->query("
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 $archivedCredentials = $pdo->query("
-    SELECT * FROM archived_credentials
-    ORDER BY archived_at DESC
+    SELECT
+        c.*,
+        e.firstname,
+        e.middlename,
+        e.lastname,
+        e.department
+    FROM credentials c
+    LEFT JOIN employees e ON c.employee_id = e.id
+    WHERE c.is_deleted = 1
+    ORDER BY c.uploaded_at DESC
 ")->fetchAll(PDO::FETCH_ASSOC);
+
+$csrf = generate_csrf_token();
 
 include __DIR__ . '/../includes/header_admin.php';
 ?>
@@ -216,10 +265,11 @@ include __DIR__ . '/../includes/header_admin.php';
                                     <td><?= e(trim($row['lastname'] . ', ' . $row['firstname'] . ' ' . ($row['middlename'] ?? ''))) ?></td>
                                     <td><?= e($row['department'] ?? 'N/A') ?></td>
                                     <td><?= e($row['employment_status'] ?? 'N/A') ?></td>
-                                    <td><?= e(date('F d, Y h:i A', strtotime($row['archived_at']))) ?></td>
+                                    <td><?= !empty($row['archived_at']) ? e(date('F d, Y h:i A', strtotime($row['archived_at']))) : 'N/A' ?></td>
                                     <td class="text-center">
                                         <div class="action-icon-group">
                                             <form method="POST" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                                                 <input type="hidden" name="action" value="restore_employee">
                                                 <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
                                                 <button type="submit" class="icon-action-btn icon-action-btn--view" title="Restore">
@@ -228,6 +278,7 @@ include __DIR__ . '/../includes/header_admin.php';
                                             </form>
 
                                             <form method="POST" class="d-inline" onsubmit="return confirm('Permanently delete this archived employee?');">
+                                                <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                                                 <input type="hidden" name="action" value="delete_employee_permanently">
                                                 <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
                                                 <button type="submit" class="icon-action-btn icon-action-btn--delete" title="Delete Permanently">
@@ -271,7 +322,7 @@ include __DIR__ . '/../includes/header_admin.php';
                             <th>Department</th>
                             <th>Type</th>
                             <th>File Name</th>
-                            <th>Archived At</th>
+                            <th>Date Uploaded</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -279,28 +330,44 @@ include __DIR__ . '/../includes/header_admin.php';
                         <?php if ($archivedCredentials): ?>
                             <?php foreach ($archivedCredentials as $row): ?>
                                 <tr>
-                                    <td><?= e(trim(($row['lastname'] ?? '') . ', ' . ($row['firstname'] ?? '') . ' ' . ($row['middlename'] ?? ''))) ?></td>
+                                    <td>
+                                        <?= e(trim(($row['lastname'] ?? '') . ', ' . ($row['firstname'] ?? '') . ' ' . ($row['middlename'] ?? ''))) ?>
+                                    </td>
                                     <td><?= e($row['department'] ?? 'N/A') ?></td>
-                                    <td><?= e($row['credential_type'] ?? 'N/A') ?></td>
+                                    <td><?= e(credential_label($row['credential_type'] ?? 'N/A')) ?></td>
                                     <td><?= e($row['original_name'] ?? 'N/A') ?></td>
-                                    <td><?= e(date('F d, Y h:i A', strtotime($row['archived_at']))) ?></td>
+                                    <td><?= !empty($row['uploaded_at']) ? e(date('F d, Y h:i A', strtotime($row['uploaded_at']))) : 'N/A' ?></td>
                                     <td class="text-center">
-                                        <div class="action-icon-group">
-                                            <form method="POST" class="d-inline">
+                                        <div class="icon-stack">
+
+                                            <!-- VIEW -->
+                                            <a href="../<?= e(ltrim((string)$row['file_path'], '/')) ?>"
+                                            target="_blank"
+                                            class="icon-btn icon-btn--view"
+                                            title="View File">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+
+                                            <!-- RESTORE -->
+                                            <form method="POST">
+                                                <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                                                 <input type="hidden" name="action" value="restore_credential">
                                                 <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
-                                                <button type="submit" class="icon-action-btn icon-action-btn--view" title="Restore">
+                                                <button type="submit" class="icon-btn icon-btn--restore" title="Restore">
                                                     <i class="fas fa-rotate-left"></i>
                                                 </button>
                                             </form>
 
-                                            <form method="POST" class="d-inline" onsubmit="return confirm('Permanently delete this archived credential?');">
+                                            <!-- DELETE -->
+                                            <form method="POST" onsubmit="return confirm('Permanently delete this archived credential?');">
+                                                <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
                                                 <input type="hidden" name="action" value="delete_credential_permanently">
                                                 <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
-                                                <button type="submit" class="icon-action-btn icon-action-btn--delete" title="Delete Permanently">
+                                                <button type="submit" class="icon-btn icon-btn--delete" title="Delete Permanently">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
+
                                         </div>
                                     </td>
                                 </tr>

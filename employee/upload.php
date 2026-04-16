@@ -8,6 +8,7 @@ $errors = [];
 $success = '';
 
 $allowed_ext = ['jpg','jpeg','png','pdf','doc','docx','xls','xlsx'];
+$allowed_types = ['PDS', 'SALN', 'ELIGIBILITY', 'SEMINAR_CERTIFICATE', 'TOR', 'APPOINTMENT_PAPER'];
 
 if (is_post()) {
     require_csrf();
@@ -15,13 +16,20 @@ if (is_post()) {
     $type = $_POST['credential_type'] ?? '';
     $file = $_FILES['file'] ?? null;
 
-    if (!$type) $errors[] = 'Credential type is required.';
-    if (!$file || $file['error'] !== 0) $errors[] = 'File upload failed.';
+    if (!$type) {
+        $errors[] = 'Credential type is required.';
+    } elseif (!in_array($type, $allowed_types, true)) {
+        $errors[] = 'Invalid credential type selected.';
+    }
+
+    if (!$file || $file['error'] !== 0) {
+        $errors[] = 'File upload failed.';
+    }
 
     if (!$errors) {
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
-        if (!in_array($ext, $allowed_ext)) {
+        if (!in_array($ext, $allowed_ext, true)) {
             $errors[] = 'Invalid file type.';
         }
 
@@ -31,11 +39,17 @@ if (is_post()) {
     }
 
     if (!$errors) {
+        $uploadDir = __DIR__ . '/../assets/uploads/credentials/';
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
         $newName = bin2hex(random_bytes(16)) . '.' . $ext;
-        $path = '../assets/uploads/credentials/' . $newName;
+        $absolutePath = $uploadDir . $newName;
         $relativePath = 'assets/uploads/credentials/' . $newName;
 
-        if (move_uploaded_file($file['tmp_name'], $path)) {
+        if (move_uploaded_file($file['tmp_name'], $absolutePath)) {
 
             $stmt = $pdo->prepare("
                 INSERT INTO credentials
@@ -48,7 +62,7 @@ if (is_post()) {
                 $type,
                 $file['name'],
                 $newName,
-                $path,
+                $relativePath,
                 $ext,
                 $file['type'],
                 $file['size']
@@ -115,6 +129,7 @@ include __DIR__ . '/../includes/header_employee.php';
                                 <option value="ELIGIBILITY" <?= (($_POST['credential_type'] ?? '') === 'ELIGIBILITY') ? 'selected' : '' ?>>Eligibility</option>
                                 <option value="SEMINAR_CERTIFICATE" <?= (($_POST['credential_type'] ?? '') === 'SEMINAR_CERTIFICATE') ? 'selected' : '' ?>>Seminar/Certificate</option>
                                 <option value="TOR" <?= (($_POST['credential_type'] ?? '') === 'TOR') ? 'selected' : '' ?>>TOR</option>
+                                <option value="APPOINTMENT_PAPER" <?= (($_POST['credential_type'] ?? '') === 'APPOINTMENT_PAPER') ? 'selected' : '' ?>>Appointment Paper</option>
                             </select>
                         </div>
 
@@ -174,4 +189,4 @@ include __DIR__ . '/../includes/header_employee.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>   
+<?php include __DIR__ . '/../includes/footer.php'; ?>

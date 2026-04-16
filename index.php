@@ -275,37 +275,31 @@ try {
 
             <!-- KEEP TABLE FORMAT AS IS -->
             <div class="calendar-table-wrap">
-                <div class="table-responsive">
-                    <table class="table calendar-table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Program</th>
-                                <th>Venue</th>
-                                <th>Time</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($mondayPrograms)): ?>
-                                <?php foreach ($mondayPrograms as $program): ?>
-                                    <tr>
-                                        <td><?= !empty($program['schedule_date']) ? e(date('F d, Y', strtotime($program['schedule_date']))) : '-' ?></td>
-                                        <td><strong><?= e($program['title'] ?? '') ?></strong></td>
-                                        <td><?= e($program['venue'] ?? '-') ?></td>
-                                        <td><?= e($program['schedule_time'] ?? '-') ?></td>
-                                        <td><?= nl2br(e($program['description'] ?? '-')) ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">No Monday program available yet.</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <div class="table-responsive">
+        <table class="table calendar-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Department</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($mondayPrograms)): ?>
+                    <?php foreach ($mondayPrograms as $program): ?>
+                        <tr>
+                            <td><?= !empty($program['schedule_date']) ? e(date('F d, Y', strtotime($program['schedule_date']))) : '-' ?></td>
+                            <td><strong><?= e($program['department'] ?? '-') ?></strong></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="2" class="text-center text-muted py-4">No Monday program available yet.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
         </div>
     </section>
 

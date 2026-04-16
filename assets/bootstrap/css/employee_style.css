@@ -1832,3 +1832,64 @@ body.ecms-landing-body {
         font-size: 2.3rem;
     }
 }
+
+
+
+
+
+
+
+
+.icon-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.icon-stack form {
+    margin: 0;
+}
+
+.icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* VIEW */
+.icon-btn--view {
+    background: #e8f1ff;
+    color: #1d4ed8;
+}
+
+.icon-btn--view:hover {
+    background: #dbeafe;
+}
+
+/* RESTORE */
+.icon-btn--restore {
+    background: #ecfdf3;
+    color: #15803d;
+}
+
+.icon-btn--restore:hover {
+    background: #dcfce7;
+}
+
+/* DELETE */
+.icon-btn--delete {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.icon-btn--delete:hover {
+    background: #fee2e2;
+}
